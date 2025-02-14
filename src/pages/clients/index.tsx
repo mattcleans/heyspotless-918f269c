@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import {
   Calendar,
   CreditCard,
+  DollarSign,
   Image,
   MapPin,
   MessageCircle,
