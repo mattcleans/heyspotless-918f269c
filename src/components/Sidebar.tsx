@@ -8,7 +8,8 @@ import {
   DollarSign, 
   MessageSquare,
   Menu,
-  X
+  X,
+  Star
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,7 +44,11 @@ const Sidebar = () => {
       >
         <div className="flex flex-col h-full">
           <div className="p-6">
-            <h1 className="text-2xl font-semibold text-sage-600">CleanSync</h1>
+            <div className="flex items-center space-x-2">
+              <Star className="w-6 h-6 text-[#FFD700]" />
+              <h1 className="text-2xl font-semibold text-[#0066B3]">Hey Spotless</h1>
+            </div>
+            <p className="text-sm text-[#1B365D] mt-1">Dallas Cleaning Professionals</p>
           </div>
 
           <nav className="flex-1 px-4 space-y-1">
@@ -57,10 +62,10 @@ const Sidebar = () => {
                   to={item.path}
                   className={cn(
                     "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
-                    "hover:bg-sage-50 hover:text-sage-600",
+                    "hover:bg-[#A8E6EF]/10 hover:text-[#0066B3]",
                     isActive
-                      ? "bg-sage-50 text-sage-600"
-                      : "text-gray-600"
+                      ? "bg-[#A8E6EF]/10 text-[#0066B3]"
+                      : "text-[#1B365D]"
                   )}
                 >
                   <Icon className="w-5 h-5 mr-3" />
@@ -71,8 +76,8 @@ const Sidebar = () => {
           </nav>
 
           <div className="p-6">
-            <div className="p-4 rounded-lg bg-sage-50">
-              <p className="text-sm text-sage-600">
+            <div className="p-4 rounded-lg bg-[#A8E6EF]/10">
+              <p className="text-sm text-[#0066B3]">
                 Need help? Contact support
               </p>
             </div>
