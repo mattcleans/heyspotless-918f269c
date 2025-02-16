@@ -1,15 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import {
-  Calculator,
-  Check,
-  DollarSign,
-  Home,
-  Plus,
-  Minus,
-} from "lucide-react";
+import { FrequencySelector } from "./components/FrequencySelector";
+import { RoomSelector } from "./components/RoomSelector";
+import { ExtrasSelector } from "./components/ExtrasSelector";
+import { QuoteSummary } from "./components/QuoteSummary";
 
 interface RoomCounts {
   [key: string]: number;
@@ -61,7 +55,7 @@ const QuotePage = () => {
   const [selectedFrequency, setSelectedFrequency] = useState<string>("one-time");
   const [roomCounts, setRoomCounts] = useState<RoomCounts>({});
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
-  const [total, setTotal] = useState<number>(60); // Starting with arrival fee
+  const [total, setTotal] = useState<number>(60);
 
   const updateRoomCount = (room: string, increment: boolean) => {
     setRoomCounts((prev) => ({
@@ -82,26 +76,25 @@ const QuotePage = () => {
     const frequencyMultiplier =
       frequencies.find((f) => f.id === selectedFrequency)?.priceMultiplier || 1;
 
-    // Calculate rooms total
     const roomsTotal = Object.entries(roomCounts).reduce(
       (sum, [room, count]) => sum + (rooms[room as keyof typeof rooms] * count),
       0
     );
 
-    // Calculate extras total
     const extrasTotal = selectedExtras.reduce(
       (sum, extra) =>
         sum + (extraServices.find((service) => service.name === extra)?.price || 0),
       0
     );
 
-    // Base arrival fee with frequency multiplier
     const arrivalFee = 60 * frequencyMultiplier;
-
-    // Calculate final total
     const calculatedTotal = (roomsTotal * frequencyMultiplier) + extrasTotal + arrivalFee;
     setTotal(calculatedTotal);
   }, [selectedFrequency, roomCounts, selectedExtras]);
+
+  const handleBookNow = () => {
+    console.log("Book now clicked");
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 animate-fade-in p-6">
@@ -112,118 +105,29 @@ const QuotePage = () => {
         </p>
       </div>
 
-      {/* Frequency Selection */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-[#1B365D] mb-4">
-          Service Frequency
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {frequencies.map((frequency) => (
-            <Button
-              key={frequency.id}
-              variant={selectedFrequency === frequency.id ? "default" : "outline"}
-              className={selectedFrequency === frequency.id ? "bg-[#0066B3]" : ""}
-              onClick={() => setSelectedFrequency(frequency.id)}
-            >
-              {frequency.name}
-            </Button>
-          ))}
-        </div>
-      </Card>
+      <FrequencySelector
+        frequencies={frequencies}
+        selectedFrequency={selectedFrequency}
+        onFrequencyChange={setSelectedFrequency}
+      />
 
-      {/* Room Selection */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-[#1B365D] mb-4">
-          Select Your Rooms
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {Object.entries(rooms).map(([room, price]) => (
-            <div
-              key={room}
-              className="flex items-center justify-between p-4 border rounded-lg"
-            >
-              <div>
-                <p className="font-medium text-[#1B365D]">{room}</p>
-                <p className="text-sm text-[#1B365D]/60">
-                  ${price.toFixed(2)} per room
-                </p>
-              </div>
-              <div className="flex items-center space-x-3">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => updateRoomCount(room, false)}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-8 text-center">{roomCounts[room] || 0}</span>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => updateRoomCount(room, true)}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
+      <RoomSelector
+        rooms={rooms}
+        roomCounts={roomCounts}
+        onUpdateRoomCount={updateRoomCount}
+      />
 
-      {/* Extra Services */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold text-[#1B365D] mb-4">
-          Extra Services
-        </h2>
-        <div className="grid gap-4 md:grid-cols-2">
-          {extraServices.map((service) => (
-            <div
-              key={service.name}
-              className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer ${
-                selectedExtras.includes(service.name)
-                  ? "border-[#0066B3] bg-[#0066B3]/5"
-                  : ""
-              }`}
-              onClick={() => toggleExtra(service.name)}
-            >
-              <div>
-                <p className="font-medium text-[#1B365D]">{service.name}</p>
-                <p className="text-sm text-[#1B365D]/60">
-                  ${service.price.toFixed(2)}
-                </p>
-              </div>
-              {selectedExtras.includes(service.name) && (
-                <Check className="h-5 w-5 text-[#0066B3]" />
-              )}
-            </div>
-          ))}
-        </div>
-      </Card>
+      <ExtrasSelector
+        extraServices={extraServices}
+        selectedExtras={selectedExtras}
+        onToggleExtra={toggleExtra}
+      />
 
-      {/* Quote Summary */}
-      <Card className="p-6 bg-[#0066B3] text-white">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Total Estimate</h2>
-            <p className="text-white/80">
-              {frequencies.find((f) => f.id === selectedFrequency)?.name}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-3xl font-bold">${total.toFixed(2)}</p>
-            <p className="text-white/80">per service</p>
-          </div>
-        </div>
-        <Button
-          className="w-full mt-4 bg-white text-[#0066B3] hover:bg-white/90"
-          onClick={() => {
-            // TODO: Implement booking flow
-            console.log("Book now clicked");
-          }}
-        >
-          Book Now
-        </Button>
-      </Card>
+      <QuoteSummary
+        total={total}
+        frequencyName={frequencies.find((f) => f.id === selectedFrequency)?.name || ""}
+        onBookNow={handleBookNow}
+      />
     </div>
   );
 };
