@@ -8,6 +8,7 @@ import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import ClientsPage from "./pages/clients";
 import BookingPage from "./pages/schedule";
+import QuotePage from "./pages/quotes";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/clients" element={<ClientsPage />} />
             <Route path="/schedule" element={<BookingPage />} />
+            <Route path="/quotes" element={<QuotePage />} />
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
