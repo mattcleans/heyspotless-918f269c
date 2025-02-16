@@ -1,4 +1,5 @@
 
+import React, { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -45,7 +46,7 @@ const App = () => {
   const { setUserType } = useAuthStore();
 
   // Set user type based on subdomain when app loads
-  React.useEffect(() => {
+  useEffect(() => {
     const userType = getUserTypeFromDomain();
     setUserType(userType);
   }, [setUserType]);
