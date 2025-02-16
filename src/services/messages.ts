@@ -16,22 +16,50 @@ export interface Contact {
   avatar?: string;
   status: 'online' | 'offline';
   lastSeen?: Date;
+  type: 'client' | 'employee';
+  role?: string; // For employees
 }
 
 interface MessagesState {
   messages: Message[];
   contacts: Contact[];
   selectedContact: Contact | null;
+  filter: 'all' | 'clients' | 'employees';
   addMessage: (message: Omit<Message, 'id' | 'timestamp' | 'status'>) => void;
   setSelectedContact: (contact: Contact | null) => void;
+  setFilter: (filter: 'all' | 'clients' | 'employees') => void;
 }
 
 // Mock data
 const mockContacts: Contact[] = [
-  { id: '1', name: 'John Smith', status: 'online' },
-  { id: '2', name: 'Maria Garcia', status: 'offline', lastSeen: new Date() },
-  { id: '3', name: 'David Wilson', status: 'online' },
-  { id: '4', name: 'Sarah Johnson', status: 'offline', lastSeen: new Date() },
+  { 
+    id: '1', 
+    name: 'John Smith', 
+    status: 'online',
+    type: 'client'
+  },
+  { 
+    id: '2', 
+    name: 'Maria Garcia', 
+    status: 'offline', 
+    lastSeen: new Date(),
+    type: 'employee',
+    role: 'Cleaning Specialist'
+  },
+  { 
+    id: '3', 
+    name: 'David Wilson', 
+    status: 'online',
+    type: 'client'
+  },
+  { 
+    id: '4', 
+    name: 'Sarah Johnson', 
+    status: 'offline', 
+    lastSeen: new Date(),
+    type: 'employee',
+    role: 'Team Lead'
+  },
 ];
 
 const mockMessages: Message[] = [
@@ -57,6 +85,7 @@ export const useMessagesStore = create<MessagesState>((set) => ({
   messages: mockMessages,
   contacts: mockContacts,
   selectedContact: null,
+  filter: 'all',
   addMessage: (message) =>
     set((state) => ({
       messages: [
@@ -70,4 +99,5 @@ export const useMessagesStore = create<MessagesState>((set) => ({
       ],
     })),
   setSelectedContact: (contact) => set({ selectedContact: contact }),
+  setFilter: (filter) => set({ filter }),
 }));

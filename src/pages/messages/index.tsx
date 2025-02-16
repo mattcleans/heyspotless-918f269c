@@ -1,23 +1,24 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, Phone, Video, History, Search } from "lucide-react";
+import { MessageSquare, Phone, Video, History, Search, Users, UserCheck } from "lucide-react";
 import { useMessagesStore, type Contact, type Message } from "@/services/messages";
 import { format } from "date-fns";
 
 const MessagesPage = () => {
-  const { contacts, messages, selectedContact, setSelectedContact, addMessage } = useMessagesStore();
+  const { contacts, messages, selectedContact, setSelectedContact, addMessage, filter, setFilter } = useMessagesStore();
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Filter contacts based on search query
-  const filteredContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter contacts based on search query and type
+  const filteredContacts = contacts.filter((contact) => {
+    const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filter === 'all' || contact.type === filter;
+    return matchesSearch && matchesFilter;
+  });
 
   // Get messages for selected contact
   const contactMessages = messages.filter(
@@ -55,7 +56,7 @@ const MessagesPage = () => {
       <div className="h-full grid grid-cols-1 md:grid-cols-4 gap-6">
         {/* Contacts List */}
         <Card className="md:col-span-1 h-full flex flex-col">
-          <div className="p-4 border-b">
+          <div className="p-4 border-b space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -64,6 +65,35 @@ const MessagesPage = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={filter === 'all' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter('all')}
+                className="flex-1"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                All
+              </Button>
+              <Button
+                variant={filter === 'clients' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter('clients')}
+                className="flex-1"
+              >
+                <UserCheck className="h-4 w-4 mr-2" />
+                Clients
+              </Button>
+              <Button
+                variant={filter === 'employees' ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter('employees')}
+                className="flex-1"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Team
+              </Button>
             </div>
           </div>
           <ScrollArea className="flex-1">
@@ -79,7 +109,13 @@ const MessagesPage = () => {
                   }`}
                 >
                   <div className="flex justify-between items-start">
-                    <p className="font-medium">{contact.name}</p>
+                    <div>
+                      <p className="font-medium">{contact.name}</p>
+                      <p className="text-sm opacity-70">
+                        {contact.type === 'employee' && contact.role ? contact.role : 
+                         contact.type === 'client' ? 'Client' : ''}
+                      </p>
+                    </div>
                     <span className={`h-2 w-2 rounded-full ${
                       contact.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
                     }`} />
