@@ -27,6 +27,12 @@ export const useAuthStore = create<AuthStore>((set) => ({
 // Function to determine user type based on subdomain
 const getUserTypeFromDomain = () => {
   const hostname = window.location.hostname;
+  
+  // Handle development environment
+  if (hostname === 'localhost' || hostname.includes('lovableproject.com')) {
+    return 'staff'; // Default to staff interface in development
+  }
+  
   if (hostname.startsWith('staff.')) return 'staff';
   if (hostname.startsWith('portal.')) return 'customer';
   return null;
