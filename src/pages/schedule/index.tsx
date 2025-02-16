@@ -53,18 +53,20 @@ const BookingPage = () => {
   };
 
   const handleBook = async () => {
+    if (!date) return;
+    
     try {
+      const formattedDate = format(date, 'yyyy-MM-dd');
+      
       const { data, error } = await supabase
         .from('bookings')
-        .insert([
-          {
-            date,
-            time,
-            address,
-            notes,
-            status: 'pending'
-          }
-        ]);
+        .insert({
+          date: formattedDate,
+          time: time || '',
+          address,
+          notes,
+          status: 'pending'
+        });
 
       if (error) throw error;
       
