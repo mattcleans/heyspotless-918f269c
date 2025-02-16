@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { ArrowRight, Star } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useLoadScript, Autocomplete } from "@react-google-maps/api";
+import { supabase } from "@/integrations/supabase/client";
 
 const timeSlots = [
   "9:00 AM",
@@ -18,27 +20,63 @@ const timeSlots = [
   "4:00 PM",
 ];
 
+const libraries = ["places"];
+
 const BookingPage = () => {
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState<string>();
   const [step, setStep] = useState(1);
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
+
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || "",
+    libraries: libraries as ["places"],
+  });
+
+  const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    setAutocomplete(autocomplete);
+  };
+
+  const onPlaceChanged = () => {
+    if (autocomplete !== null) {
+      const place = autocomplete.getPlace();
+      if (place.formatted_address) {
+        setAddress(place.formatted_address);
+      }
+    }
+  };
 
   const handleNext = () => {
     setStep(step + 1);
   };
 
-  const handleBook = () => {
-    // TODO: Implement booking logic
-    console.log({
-      date,
-      time,
-      address,
-      notes,
-    });
-    setStep(step + 1);
+  const handleBook = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('bookings')
+        .insert([
+          {
+            date,
+            time,
+            address,
+            notes,
+            status: 'pending'
+          }
+        ]);
+
+      if (error) throw error;
+      
+      console.log('Booking successful:', data);
+      setStep(step + 1);
+    } catch (error) {
+      console.error('Error creating booking:', error);
+    }
   };
+
+  if (loadError) return <div>Error loading maps</div>;
+  if (!isLoaded) return <div>Loading...</div>;
 
   return (
     <div className="mx-auto max-w-xl animate-fade-in">
@@ -109,12 +147,17 @@ const BookingPage = () => {
           <div className="space-y-4">
             <div>
               <h3 className="text-lg font-medium text-[#0066B3] mb-2">ADDRESS:</h3>
-              <Input
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                placeholder="Enter your address"
-                className="w-full"
-              />
+              <Autocomplete
+                onLoad={onLoad}
+                onPlaceChanged={onPlaceChanged}
+              >
+                <Input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Enter your address"
+                  className="w-full"
+                />
+              </Autocomplete>
             </div>
             <div>
               <h3 className="text-lg font-medium text-[#0066B3] mb-2">ANY NOTES FOR US?</h3>
@@ -143,6 +186,7 @@ const BookingPage = () => {
           <div className="space-y-2 text-[#1B365D]">
             <p>WE WILL SEE YOU ON {format(date!, "EEEE")},</p>
             <p>{format(date!, "MMMM do")} AT {time}</p>
+            <p className="mt-4">{address}</p>
           </div>
           <Button
             variant="outline"
