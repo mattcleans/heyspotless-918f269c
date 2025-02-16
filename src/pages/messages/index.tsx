@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -77,18 +78,18 @@ const MessagesPage = () => {
                 All
               </Button>
               <Button
-                variant={filter === 'clients' ? "default" : "outline"}
+                variant={filter === 'client' ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilter('clients')}
+                onClick={() => setFilter('client')}
                 className="flex-1"
               >
                 <UserCheck className="h-4 w-4 mr-2" />
                 Clients
               </Button>
               <Button
-                variant={filter === 'employees' ? "default" : "outline"}
+                variant={filter === 'employee' ? "default" : "outline"}
                 size="sm"
-                onClick={() => setFilter('employees')}
+                onClick={() => setFilter('employee')}
                 className="flex-1"
               >
                 <Users className="h-4 w-4 mr-2" />

@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 export interface Message {
@@ -24,10 +23,10 @@ interface MessagesState {
   messages: Message[];
   contacts: Contact[];
   selectedContact: Contact | null;
-  filter: 'all' | 'clients' | 'employees';
+  filter: 'all' | 'client' | 'employee';
   addMessage: (message: Omit<Message, 'id' | 'timestamp' | 'status'>) => void;
   setSelectedContact: (contact: Contact | null) => void;
-  setFilter: (filter: 'all' | 'clients' | 'employees') => void;
+  setFilter: (filter: 'all' | 'client' | 'employee') => void;
 }
 
 // Mock data
