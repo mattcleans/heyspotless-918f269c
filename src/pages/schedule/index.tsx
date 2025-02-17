@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +22,8 @@ interface QuoteDetails {
 
 interface LocationState {
   quoteDetails?: QuoteDetails;
+  date?: Date;
+  time?: string;
 }
 
 const SchedulePage = () => {
@@ -46,7 +49,7 @@ const SchedulePage = () => {
       setTotalPrice(state.quoteDetails.total);
       setSelectedFrequency(state.quoteDetails.frequency);
       setServiceTypeName(state.quoteDetails.serviceTypeName);
-      setCurrentStep("date");
+      setCurrentStep("address"); // Changed from "date" to "address"
     }
   }, [location.state]);
 
@@ -97,7 +100,9 @@ const SchedulePage = () => {
           address,
           notes,
           status: 'pending',
-          price: totalPrice
+          price: totalPrice,
+          frequency: selectedFrequency,
+          service_type: serviceTypeName
         });
 
       if (bookingError) throw bookingError;
