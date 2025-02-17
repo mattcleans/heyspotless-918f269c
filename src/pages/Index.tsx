@@ -1,4 +1,4 @@
-
+import React from "react";
 import { Card } from "@/components/ui/card";
 import { 
   Calendar, 
@@ -40,17 +40,21 @@ const stats = [
   },
 ];
 
-const Index = () => {
+const IndexPage = () => {
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="flex flex-col space-y-4">
-        <div className="flex items-center space-x-3">
-          <Star className="w-8 h-8 text-[#FFD700]" />
-          <div className="space-y-1">
-            <h2 className="text-3xl font-bold text-[#1B365D]">Welcome back</h2>
-            <p className="text-[#1B365D]/60">Here's what's happening with your business today.</p>
-          </div>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex flex-col items-center justify-center">
+        <img 
+          src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
+          alt="Hey Spotless Logo" 
+          className="h-20 object-contain mb-4"
+        />
+        <h1 className="text-3xl font-bold text-[#1B365D]">
+          Hey Spotless
+        </h1>
+        <p className="text-[#1B365D]/60 mt-2">
+          GOODBYE SPOTS • HELLO SPARKLE
+        </p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -125,4 +129,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default IndexPage;
