@@ -6,7 +6,7 @@ const Layout = () => {
   return (
     <div className="layout-grid">
       <Sidebar />
-      <main className="min-h-screen p-8 bg-gray-50">
+      <main className="min-h-screen p-8 bg-gray-50 ml-[280px] md:ml-0">
         <div className="max-w-7xl mx-auto">
           <Outlet />
         </div>
