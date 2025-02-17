@@ -3,6 +3,7 @@ import React from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
+import { isAfter, startOfDay } from "date-fns";
 
 interface DateSelectionProps {
   date: Date | undefined;
@@ -11,6 +12,12 @@ interface DateSelectionProps {
 }
 
 const DateSelection = ({ date, onDateSelect, onNext }: DateSelectionProps) => {
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate && isAfter(startOfDay(selectedDate), startOfDay(new Date()))) {
+      onDateSelect(selectedDate);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#0066B3] text-center">PICK A DAY</h2>
@@ -18,7 +25,8 @@ const DateSelection = ({ date, onDateSelect, onNext }: DateSelectionProps) => {
         <Calendar
           mode="single"
           selected={date}
-          onSelect={onDateSelect}
+          onSelect={handleDateSelect}
+          disabled={(date) => !isAfter(startOfDay(date), startOfDay(new Date()))}
           className="rounded-md border"
         />
       </div>

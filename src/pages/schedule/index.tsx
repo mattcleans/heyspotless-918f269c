@@ -1,159 +1,145 @@
 
-import { useState, useEffect } from "react";
-import { useLoadScript } from "@react-google-maps/api";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { format } from "date-fns";
-
-import BookingHeader from "./components/BookingHeader";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuthStore } from "@/App";
+import { Loadable } from "@/components/ui/loadable";
+import { useToast } from "@/hooks/use-toast";
+import { BookingHeader } from "./components/BookingHeader";
 import DateSelection from "./components/DateSelection";
 import TimeSelection from "./components/TimeSelection";
 import AddressAndNotes from "./components/AddressAndNotes";
 import BookingConfirmation from "./components/BookingConfirmation";
+import { Autocomplete } from "@react-google-maps/api";
 
-const libraries = ["places"];
+type BookingStep = "date" | "time" | "address" | "confirmation";
 
-const BookingPage = () => {
+const SchedulePage = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { userId } = useAuthStore();
+  const [currentStep, setCurrentStep] = useState<BookingStep>("date");
   const [date, setDate] = useState<Date>();
   const [time, setTime] = useState<string>();
-  const [step, setStep] = useState(1);
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const [userId, setUserId] = useState<string | null>(null);
-  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>("");
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
-  const navigate = useNavigate();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    const fetchGoogleMapsKey = async () => {
-      const { data: secrets, error } = await supabase
-        .rpc('get_secret', { secret_name: 'GOOGLE_MAPS_API_KEY' });
-      
-      if (error) {
-        console.error('Error fetching Google Maps API key:', error);
-        return;
-      }
-      
-      if (secrets) {
-        setGoogleMapsApiKey(secrets);
-      }
-    };
-
-    fetchGoogleMapsKey();
-  }, []);
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: googleMapsApiKey,
-    libraries: libraries as ["places"],
-  });
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast.error("Please sign in to make a booking");
-        navigate("/");
-        return;
-      }
-      setUserId(user.id);
-    };
-    
-    checkUser();
-  }, [navigate]);
-
-  const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
-    setAutocomplete(autocomplete);
-  };
-
-  const onPlaceChanged = () => {
-    if (autocomplete !== null) {
-      const place = autocomplete.getPlace();
-      if (place.formatted_address) {
-        setAddress(place.formatted_address);
-      }
+  const handleDateSelect = (selectedDate: Date | undefined) => {
+    if (selectedDate && selectedDate < new Date()) {
+      toast({
+        variant: "destructive",
+        title: "Invalid Date",
+        description: "Please select a future date"
+      });
+      return;
     }
+    setDate(selectedDate);
   };
 
-  const handleNext = () => {
-    setStep(step + 1);
+  const handlePlaceSelect = () => {
+    if (autocomplete) {
+      const place = autocomplete.getPlace();
+      setAddress(place.formatted_address || "");
+    }
   };
 
   const handleBook = async () => {
-    if (!date || !userId) return;
-    
+    if (!userId || !date || !time || !address) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill in all required fields"
+      });
+      return;
+    }
+
     try {
-      const formattedDate = format(date, 'yyyy-MM-dd');
-      
+      setIsSubmitting(true);
       const { error } = await supabase
         .from('bookings')
         .insert({
-          date: formattedDate,
-          time: time || '',
+          user_id: userId,
+          date: date.toISOString().split('T')[0],
+          time,
           address,
           notes,
-          status: 'pending',
-          user_id: userId
+          status: 'pending'
         });
 
-      if (error) {
-        toast.error("Failed to create booking");
-        throw error;
-      }
-      
-      toast.success("Booking created successfully!");
-      setStep(step + 1);
+      if (error) throw error;
+
+      setCurrentStep("confirmation");
+      toast({
+        title: "Booking Successful",
+        description: "Your cleaning service has been scheduled"
+      });
     } catch (error) {
-      console.error('Error creating booking:', error);
+      console.error('Booking error:', error);
+      toast({
+        variant: "destructive",
+        title: "Booking Failed",
+        description: "There was an error scheduling your cleaning service. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (!googleMapsApiKey) return <div>Loading...</div>;
-  if (loadError) return <div>Error loading maps</div>;
-  if (!isLoaded) return <div>Loading...</div>;
-  if (!userId) return <div>Loading...</div>;
+  const renderStep = () => {
+    switch (currentStep) {
+      case "date":
+        return (
+          <DateSelection
+            date={date}
+            onDateSelect={handleDateSelect}
+            onNext={() => setCurrentStep("time")}
+          />
+        );
+      case "time":
+        return (
+          <TimeSelection
+            time={time}
+            onTimeSelect={setTime}
+            onNext={() => setCurrentStep("address")}
+          />
+        );
+      case "address":
+        return (
+          <AddressAndNotes
+            address={address}
+            notes={notes}
+            onAddressChange={setAddress}
+            onNotesChange={setNotes}
+            onBook={handleBook}
+            onLoad={setAutocomplete}
+            onPlaceChanged={handlePlaceSelect}
+          />
+        );
+      case "confirmation":
+        return (
+          <BookingConfirmation
+            date={date!}
+            time={time!}
+            address={address}
+          />
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <div className="mx-auto max-w-xl animate-fade-in">
-      <BookingHeader />
-
-      {step === 1 && (
-        <DateSelection
-          date={date}
-          onDateSelect={setDate}
-          onNext={handleNext}
-        />
-      )}
-
-      {step === 2 && (
-        <TimeSelection
-          time={time}
-          onTimeSelect={setTime}
-          onNext={handleNext}
-        />
-      )}
-
-      {step === 3 && (
-        <AddressAndNotes
-          address={address}
-          notes={notes}
-          onAddressChange={setAddress}
-          onNotesChange={setNotes}
-          onBook={handleBook}
-          onLoad={onLoad}
-          onPlaceChanged={onPlaceChanged}
-        />
-      )}
-
-      {step === 4 && date && time && (
-        <BookingConfirmation
-          date={date}
-          time={time}
-          address={address}
-        />
-      )}
+    <div className="container mx-auto px-4 py-8">
+      <BookingHeader currentStep={currentStep} />
+      <div className="max-w-md mx-auto mt-8">
+        <Loadable loading={isSubmitting}>
+          {renderStep()}
+        </Loadable>
+      </div>
     </div>
   );
 };
 
-export default BookingPage;
+export default SchedulePage;
