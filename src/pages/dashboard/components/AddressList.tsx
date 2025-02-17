@@ -1,8 +1,9 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MapPin, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { AddAddressDialog } from "@/components/address/AddAddressDialog";
 import type { Database } from "@/integrations/supabase/types";
 
 type Address = Database['public']['Tables']['addresses']['Row'];
@@ -12,7 +13,12 @@ interface AddressListProps {
 }
 
 export const AddressList = ({ addresses }: AddressListProps) => {
-  const { toast } = useToast();
+  const [showAddDialog, setShowAddDialog] = useState(false);
+
+  const handleAddressAdded = () => {
+    // This will trigger a refresh of the addresses list in the parent component
+    window.location.reload();
+  };
 
   return (
     <Card>
@@ -21,7 +27,7 @@ export const AddressList = ({ addresses }: AddressListProps) => {
           <CardTitle>Saved Addresses</CardTitle>
           <CardDescription>Your saved cleaning locations</CardDescription>
         </div>
-        <Button variant="outline" size="icon" onClick={() => toast({ description: "Address management coming soon!" })}>
+        <Button variant="outline" size="icon" onClick={() => setShowAddDialog(true)}>
           <Plus className="h-4 w-4" />
         </Button>
       </CardHeader>
@@ -45,6 +51,12 @@ export const AddressList = ({ addresses }: AddressListProps) => {
           ))}
         </div>
       </CardContent>
+
+      <AddAddressDialog
+        open={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        onAddressAdded={handleAddressAdded}
+      />
     </Card>
   );
 };
