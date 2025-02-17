@@ -75,6 +75,33 @@ export type Database = {
         }
         Relationships: []
       }
+      service_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price_multiplier: number
+          type: Database["public"]["Enums"]["cleaning_type"]
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price_multiplier: number
+          type: Database["public"]["Enums"]["cleaning_type"]
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price_multiplier?: number
+          type?: Database["public"]["Enums"]["cleaning_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -88,7 +115,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      cleaning_type: "standard" | "deep" | "move"
     }
     CompositeTypes: {
       [_ in never]: never

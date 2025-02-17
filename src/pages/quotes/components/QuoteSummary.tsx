@@ -5,16 +5,17 @@ import { Card } from "@/components/ui/card";
 interface QuoteSummaryProps {
   total: number;
   frequencyName: string;
+  serviceTypeName: string;
   onBookNow: () => void;
 }
 
-export const QuoteSummary = ({ total, frequencyName, onBookNow }: QuoteSummaryProps) => {
+export const QuoteSummary = ({ total, frequencyName, serviceTypeName, onBookNow }: QuoteSummaryProps) => {
   return (
     <Card className="p-6 bg-[#0066B3] text-white">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Total Estimate</h2>
-          <p className="text-white/80">{frequencyName}</p>
+          <p className="text-white/80">{serviceTypeName} - {frequencyName}</p>
         </div>
         <div className="text-right">
           <p className="text-3xl font-bold">${total.toFixed(2)}</p>

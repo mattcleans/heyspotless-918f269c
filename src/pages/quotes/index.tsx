@@ -4,6 +4,9 @@ import { FrequencySelector } from "./components/FrequencySelector";
 import { RoomSelector } from "./components/RoomSelector";
 import { ExtrasSelector } from "./components/ExtrasSelector";
 import { QuoteSummary } from "./components/QuoteSummary";
+import { ServiceTypeSelector } from "./components/ServiceTypeSelector";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface RoomCounts {
   [key: string]: number;
@@ -18,6 +21,14 @@ interface CleaningFrequency {
 interface ExtraService {
   name: string;
   price: number;
+}
+
+interface ServiceType {
+  id: string;
+  type: 'standard' | 'deep' | 'move';
+  name: string;
+  price_multiplier: number;
+  description: string;
 }
 
 const frequencies: CleaningFrequency[] = [
@@ -56,6 +67,29 @@ const QuotePage = () => {
   const [roomCounts, setRoomCounts] = useState<RoomCounts>({});
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [total, setTotal] = useState<number>(60);
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | null>(null);
+
+  useEffect(() => {
+    const fetchServiceTypes = async () => {
+      const { data, error } = await supabase
+        .from('service_types')
+        .select('*')
+        .order('price_multiplier');
+
+      if (error) {
+        toast.error('Error fetching service types');
+        return;
+      }
+
+      setServiceTypes(data);
+      if (data.length > 0) {
+        setSelectedServiceType(data[0]); // Set standard clean as default
+      }
+    };
+
+    fetchServiceTypes();
+  }, []);
 
   const updateRoomCount = (room: string, increment: boolean) => {
     setRoomCounts((prev) => ({
@@ -76,6 +110,8 @@ const QuotePage = () => {
     const frequencyMultiplier =
       frequencies.find((f) => f.id === selectedFrequency)?.priceMultiplier || 1;
 
+    const serviceTypeMultiplier = selectedServiceType?.price_multiplier || 1;
+
     const roomsTotal = Object.entries(roomCounts).reduce(
       (sum, [room, count]) => sum + (rooms[room as keyof typeof rooms] * count),
       0
@@ -88,9 +124,9 @@ const QuotePage = () => {
     );
 
     const arrivalFee = 60 * frequencyMultiplier;
-    const calculatedTotal = (roomsTotal * frequencyMultiplier) + extrasTotal + arrivalFee;
+    const calculatedTotal = (roomsTotal * frequencyMultiplier * serviceTypeMultiplier) + extrasTotal + arrivalFee;
     setTotal(calculatedTotal);
-  }, [selectedFrequency, roomCounts, selectedExtras]);
+  }, [selectedFrequency, roomCounts, selectedExtras, selectedServiceType]);
 
   const handleBookNow = () => {
     console.log("Book now clicked");
@@ -104,6 +140,12 @@ const QuotePage = () => {
           Customize your cleaning service package
         </p>
       </div>
+
+      <ServiceTypeSelector
+        serviceTypes={serviceTypes}
+        selectedServiceType={selectedServiceType}
+        onServiceTypeChange={setSelectedServiceType}
+      />
 
       <FrequencySelector
         frequencies={frequencies}
@@ -126,6 +168,7 @@ const QuotePage = () => {
       <QuoteSummary
         total={total}
         frequencyName={frequencies.find((f) => f.id === selectedFrequency)?.name || ""}
+        serviceTypeName={selectedServiceType?.name || ""}
         onBookNow={handleBookNow}
       />
     </div>
