@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/App";
 import { Loadable } from "@/components/ui/loadable";
 import { useToast } from "@/hooks/use-toast";
-import { BookingHeader } from "./components/BookingHeader";
+import BookingHeader from "./components/BookingHeader";
 import DateSelection from "./components/DateSelection";
 import TimeSelection from "./components/TimeSelection";
 import AddressAndNotes from "./components/AddressAndNotes";
