@@ -27,6 +27,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isAuthenticated: !!userId, userId, userType }),
 }));
 
+// Type guard to check if the user type is valid
+function isValidUserType(type: string | null): type is 'staff' | 'customer' {
+  return type === 'staff' || type === 'customer';
+}
+
 function App() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -42,7 +47,13 @@ function App() {
           .eq('id', session.user.id)
           .single()
           .then(({ data }) => {
-            setAuth(session.user.id, data?.user_type || null);
+            const userType = data?.user_type || null;
+            if (isValidUserType(userType)) {
+              setAuth(session.user.id, userType);
+            } else {
+              setAuth(null, null);
+              console.error('Invalid user type received:', userType);
+            }
           });
       }
     });
@@ -59,7 +70,13 @@ function App() {
           .eq('id', session.user.id)
           .single();
         
-        setAuth(session.user.id, data?.user_type || null);
+        const userType = data?.user_type || null;
+        if (isValidUserType(userType)) {
+          setAuth(session.user.id, userType);
+        } else {
+          setAuth(null, null);
+          console.error('Invalid user type received:', userType);
+        }
       } else {
         setAuth(null, null);
       }
