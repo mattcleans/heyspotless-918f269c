@@ -29,6 +29,13 @@ export const RegisterForm = ({
 }: RegisterFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
+  const handleUserTypeChange = (value: string) => {
+    // Ensure we only pass allowed values to the parent
+    if (value === 'customer' || value === 'staff') {
+      onUserTypeChange(value);
+    }
+  };
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="space-y-2">
@@ -69,7 +76,7 @@ export const RegisterForm = ({
         <Label>I am a:</Label>
         <RadioGroup 
           value={userType} 
-          onValueChange={(value: 'customer' | 'staff') => onUserTypeChange(value)}
+          onValueChange={handleUserTypeChange}
           className="flex flex-wrap gap-4"
           disabled={loading}
         >
