@@ -7,9 +7,10 @@ interface BookingConfirmationProps {
   date: Date;
   time: string;
   address: string;
+  price: number;
 }
 
-const BookingConfirmation = ({ date, time, address }: BookingConfirmationProps) => {
+const BookingConfirmation = ({ date, time, address, price }: BookingConfirmationProps) => {
   return (
     <div className="text-center space-y-6">
       <h2 className="text-2xl font-bold text-[#0066B3]">BOOKING CONFIRMED</h2>
@@ -17,6 +18,7 @@ const BookingConfirmation = ({ date, time, address }: BookingConfirmationProps) 
         <p>WE WILL SEE YOU ON {format(date, "EEEE")},</p>
         <p>{format(date, "MMMM do")} AT {time}</p>
         <p className="mt-4">{address}</p>
+        <p className="mt-4 text-lg font-semibold">Total: ${price.toFixed(2)}</p>
       </div>
       <Button
         variant="outline"

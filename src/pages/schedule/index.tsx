@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/App";
 import { Loadable } from "@/components/ui/loadable";
@@ -9,12 +10,14 @@ import DateSelection from "./components/DateSelection";
 import TimeSelection from "./components/TimeSelection";
 import AddressAndNotes from "./components/AddressAndNotes";
 import BookingConfirmation from "./components/BookingConfirmation";
-import { Autocomplete } from "@react-google-maps/api";
+import { QuoteSummary } from "../quotes/components/QuoteSummary";
+import { Button } from "@/components/ui/button";
 
-type BookingStep = "date" | "time" | "address" | "confirmation";
+type BookingStep = "date" | "time" | "quote" | "address" | "payment" | "confirmation";
 
 const SchedulePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { userId } = useAuthStore();
   const [currentStep, setCurrentStep] = useState<BookingStep>("date");
@@ -22,8 +25,29 @@ const SchedulePage = () => {
   const [time, setTime] = useState<string>();
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [selectedFrequency, setSelectedFrequency] = useState("one-time");
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasPaymentMethod, setHasPaymentMethod] = useState(false);
+
+  useEffect(() => {
+    const checkPaymentMethods = async () => {
+      if (!userId) return;
+      
+      const { data, error } = await supabase
+        .from('payment_methods')
+        .select('id')
+        .eq('user_id', userId)
+        .limit(1);
+      
+      if (!error && data) {
+        setHasPaymentMethod(data.length > 0);
+      }
+    };
+
+    checkPaymentMethods();
+  }, [userId]);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate && selectedDate < new Date()) {
@@ -42,6 +66,12 @@ const SchedulePage = () => {
       const place = autocomplete.getPlace();
       setAddress(place.formatted_address || "");
     }
+  };
+
+  const handleQuoteComplete = (price: number, frequency: string) => {
+    setTotalPrice(price);
+    setSelectedFrequency(frequency);
+    setCurrentStep("address");
   };
 
   const handleBook = async () => {
@@ -64,7 +94,8 @@ const SchedulePage = () => {
           time,
           address,
           notes,
-          status: 'pending'
+          status: 'pending',
+          price: totalPrice
         });
 
       if (error) throw error;
@@ -101,8 +132,27 @@ const SchedulePage = () => {
           <TimeSelection
             time={time}
             onTimeSelect={setTime}
-            onNext={() => setCurrentStep("address")}
+            onNext={() => setCurrentStep("quote")}
           />
+        );
+      case "quote":
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-[#0066B3] text-center">Select Your Service</h2>
+            <Button
+              className="w-full"
+              onClick={() => navigate('/quotes', { state: { date, time } })}
+            >
+              Build New Quote
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setCurrentStep("address")}
+            >
+              Rebook Previous Service
+            </Button>
+          </div>
         );
       case "address":
         return (
@@ -111,10 +161,25 @@ const SchedulePage = () => {
             notes={notes}
             onAddressChange={setAddress}
             onNotesChange={setNotes}
-            onBook={handleBook}
+            onBook={() => setCurrentStep(hasPaymentMethod ? "confirmation" : "payment")}
             onLoad={setAutocomplete}
             onPlaceChanged={handlePlaceSelect}
           />
+        );
+      case "payment":
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-[#0066B3] text-center">Add Payment Method</h2>
+            <Button
+              className="w-full"
+              onClick={() => {
+                // This will be implemented when we add payment processing
+                setCurrentStep("confirmation");
+              }}
+            >
+              Add Payment Method
+            </Button>
+          </div>
         );
       case "confirmation":
         return (
@@ -122,6 +187,7 @@ const SchedulePage = () => {
             date={date!}
             time={time!}
             address={address}
+            price={totalPrice}
           />
         );
       default:
