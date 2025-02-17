@@ -10,6 +10,7 @@ import SchedulePage from "@/pages/schedule";
 import QuotesPage from "@/pages/quotes";
 import MessagesPage from "@/pages/messages";
 import AuthPage from "@/pages/auth";
+import EditProfilePage from "@/pages/profile/EditProfilePage";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthState {
@@ -130,6 +131,7 @@ function App() {
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="quotes" element={<QuotesPage />} />
           <Route path="messages" element={<MessagesPage />} />
+          <Route path="profile/edit" element={<EditProfilePage />} />
         </Route>
       </Routes>
       <Toaster />
