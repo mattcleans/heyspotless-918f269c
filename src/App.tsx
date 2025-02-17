@@ -1,109 +1,106 @@
 
-import React, { useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Layout from "./components/Layout";
-import Index from "./pages/Index";
-import ClientsPage from "./pages/clients";
-import BookingPage from "./pages/schedule";
-import QuotePage from "./pages/quotes";
-import MessagesPage from "./pages/messages";
-import NotFound from "./pages/NotFound";
-import { create } from 'zustand';
+import { create } from "zustand";
+import { Toaster } from "@/components/ui/sonner";
+import Layout from "@/components/Layout";
+import IndexPage from "@/pages/Index";
+import ClientsPage from "@/pages/clients";
+import SchedulePage from "@/pages/schedule";
+import QuotesPage from "@/pages/quotes";
+import MessagesPage from "@/pages/messages";
+import AuthPage from "@/pages/auth";
+import { supabase } from "@/integrations/supabase/client";
 
-interface AuthStore {
+interface AuthState {
+  isAuthenticated: boolean;
+  userId: string | null;
   userType: 'staff' | 'customer' | null;
-  setUserType: (type: 'staff' | 'customer' | null) => void;
+  setAuth: (userId: string | null, userType: 'staff' | 'customer' | null) => void;
 }
 
-export const useAuthStore = create<AuthStore>((set) => ({
+export const useAuthStore = create<AuthState>((set) => ({
+  isAuthenticated: false,
+  userId: null,
   userType: null,
-  setUserType: (type) => set({ userType: type }),
+  setAuth: (userId, userType) => 
+    set({ isAuthenticated: !!userId, userId, userType }),
 }));
 
-// Function to determine user type based on subdomain
-const getUserTypeFromDomain = () => {
-  const hostname = window.location.hostname;
-  
-  // Handle development environment and preview
-  if (hostname === 'localhost' || 
-      hostname.includes('127.0.0.1') || 
-      hostname.includes('lovableproject.com') ||
-      hostname.includes('gptengineer.app')) {
-    return 'customer'; // Default to customer interface in development
-  }
-  
-  if (hostname.startsWith('staff.')) return 'staff';
-  if (hostname.startsWith('portal.')) return 'customer';
-  return 'customer'; // Default to customer interface if no subdomain match
-};
+function App() {
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-const ProtectedRoute = ({ children, allowedUserType }: { children: React.ReactNode; allowedUserType: 'staff' | 'customer' | null }) => {
-  const userType = useAuthStore((state) => state.userType);
-  
-  if (userType !== allowedUserType) {
-    return <Navigate to="/" replace />;
-  }
-  
-  return <>{children}</>;
-};
-
-const App = () => {
-  const { setUserType } = useAuthStore();
-
-  // Set user type based on subdomain when app loads
   useEffect(() => {
-    const userType = getUserTypeFromDomain();
-    setUserType(userType);
-  }, [setUserType]);
+    // Check initial auth state
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        // Fetch user profile to get user type
+        supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            setAuth(session.user.id, data?.user_type || null);
+          });
+      }
+    });
 
-  const queryClient = new QueryClient();
-  const userType = useAuthStore((state) => state.userType);
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        // Fetch user profile to get user type
+        const { data } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', session.user.id)
+          .single();
+        
+        setAuth(session.user.id, data?.user_type || null);
+      } else {
+        setAuth(null, null);
+      }
+    });
 
-  // Always render the app now, with a default user type
+    return () => subscription.unsubscribe();
+  }, [setAuth]);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route path="/" element={
-                <ProtectedRoute allowedUserType={userType}>
-                  <Index />
-                </ProtectedRoute>
-              } />
-              <Route path="/clients" element={
-                <ProtectedRoute allowedUserType="staff">
-                  <ClientsPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/schedule" element={
-                <ProtectedRoute allowedUserType={userType}>
-                  <BookingPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/quotes" element={
-                <ProtectedRoute allowedUserType={userType}>
-                  <QuotePage />
-                </ProtectedRoute>
-              } />
-              <Route path="/messages" element={
-                <ProtectedRoute allowedUserType={userType}>
-                  <MessagesPage />
-                </ProtectedRoute>
-              } />
-              <Route path="*" element={<NotFound />} />
-            </Route>
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <Routes>
+        <Route 
+          path="/auth" 
+          element={
+            isAuthenticated ? (
+              <Navigate to="/" replace />
+            ) : (
+              <AuthPage />
+            )
+          } 
+        />
+        <Route
+          path="/"
+          element={
+            isAuthenticated ? (
+              <Layout />
+            ) : (
+              <Navigate to="/auth" replace />
+            )
+          }
+        >
+          <Route index element={<IndexPage />} />
+          <Route path="clients" element={<ClientsPage />} />
+          <Route path="schedule" element={<SchedulePage />} />
+          <Route path="quotes" element={<QuotesPage />} />
+          <Route path="messages" element={<MessagesPage />} />
+        </Route>
+      </Routes>
+      <Toaster />
+    </BrowserRouter>
   );
-};
+}
 
 export default App;
