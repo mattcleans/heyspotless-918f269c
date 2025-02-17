@@ -9,10 +9,13 @@ import { LogIn, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuthStore } from "@/App";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [userType, setUserType] = useState<'customer' | 'staff'>('customer');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -74,6 +77,11 @@ const AuthPage = () => {
       const { error } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            user_type: userType
+          }
+        }
       });
 
       if (error) {
@@ -166,6 +174,23 @@ const AuthPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
+              </div>
+              <div className="space-y-2">
+                <Label>I am a:</Label>
+                <RadioGroup 
+                  value={userType} 
+                  onValueChange={(value: 'customer' | 'staff') => setUserType(value)}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="customer" id="customer" />
+                    <Label htmlFor="customer">Customer</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="staff" id="staff" />
+                    <Label htmlFor="staff">Staff Member</Label>
+                  </div>
+                </RadioGroup>
               </div>
               <Button 
                 type="submit" 
