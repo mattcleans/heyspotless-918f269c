@@ -26,7 +26,13 @@ const AuthPage = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's an email confirmation error
+        if (error.message.includes("Email not confirmed")) {
+          throw new Error("Please check your email and click the confirmation link before signing in.");
+        }
+        throw error;
+      }
 
       navigate("/");
     } catch (error: any) {
@@ -60,7 +66,7 @@ const AuthPage = () => {
 
       toast({
         title: "Success",
-        description: "Account created successfully! You can now sign in.",
+        description: "Please check your email for a confirmation link to complete your registration.",
       });
     } catch (error: any) {
       toast({
