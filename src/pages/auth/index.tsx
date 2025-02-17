@@ -26,18 +26,6 @@ const AuthPage = () => {
     setLoading(true);
     
     try {
-      // First check if the user exists
-      const { data: existingUser, error: userError } = await supabase.auth.admin.getUserByEmail(email);
-      
-      if (userError) {
-        // If user doesn't exist
-        throw new Error("No account found with this email. Please sign up first.");
-      }
-      
-      if (existingUser && !existingUser.email_confirmed_at) {
-        throw new Error("Please check your email and click the confirmation link before signing in.");
-      }
-
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -75,8 +63,6 @@ const AuthPage = () => {
         errorMessage = "Incorrect email or password. Please try again.";
       } else if (error.message.includes("Email not confirmed")) {
         errorMessage = "Please check your email and click the confirmation link before signing in.";
-      } else if (error.message.includes("No account found")) {
-        errorMessage = error.message;
       }
 
       toast({
@@ -95,14 +81,7 @@ const AuthPage = () => {
     setLoading(true);
     
     try {
-      // Check if user already exists
-      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(email);
-      
-      if (existingUser) {
-        throw new Error("An account with this email already exists. Please log in instead.");
-      }
-
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -119,10 +98,12 @@ const AuthPage = () => {
         throw error;
       }
 
-      toast({
-        title: "Success",
-        description: "Please check your email for a confirmation link to complete your registration.",
-      });
+      if (data.user) {
+        toast({
+          title: "Success",
+          description: "Please check your email for a confirmation link to complete your registration.",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Error",
