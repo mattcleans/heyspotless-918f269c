@@ -84,7 +84,7 @@ const Sidebar = () => {
               <img 
                 src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
                 alt="Hey Spotless Logo" 
-                className="h-12 w-auto"
+                className="h-20 w-auto"
               />
             </div>
             <p className="text-sm text-[#1B365D] mt-1">
