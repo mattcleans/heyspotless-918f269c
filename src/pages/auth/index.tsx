@@ -28,6 +28,25 @@ const AuthPage = () => {
     console.log("Attempting login with email:", email);
     
     try {
+      // First, check if the user exists
+      const { data: userExists, error: userCheckError } = await supabase
+        .from('profiles')
+        .select('user_type')
+        .eq('id', (await supabase.auth.signInWithPassword({ email, password })).data.user?.id || '')
+        .single();
+
+      if (userCheckError) {
+        if (userCheckError.message.includes("Invalid login credentials")) {
+          throw new Error(
+            "Login failed. Please check:\n" +
+            "1. Your email address is correct\n" +
+            "2. Your password is correct\n" +
+            "3. You've registered an account (use the Register tab if you haven't)"
+          );
+        }
+        throw userCheckError;
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -39,14 +58,6 @@ const AuthPage = () => {
         if (error.message.includes("Email not confirmed")) {
           setShowVerifyAlert(true);
           throw new Error("Please verify your email address before signing in. Check your inbox for a confirmation link.");
-        }
-        if (error.message.includes("Invalid login credentials")) {
-          throw new Error(
-            "Login failed. Please check that:\n" +
-            "1. You've entered the correct email address\n" +
-            "2. Your password is correct\n" +
-            "3. You've registered an account (use the Register tab if you haven't)"
-          );
         }
         throw error;
       }
@@ -127,7 +138,7 @@ const AuthPage = () => {
         setShowVerifyAlert(true);
         toast({
           title: "Success",
-          description: "Registration successful! You can now log in.",
+          description: "Registration successful! Please check your email to verify your account before logging in.",
         });
         // Clear the form after successful registration
         setEmail("");
