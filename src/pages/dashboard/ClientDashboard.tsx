@@ -21,7 +21,7 @@ const ClientDashboard = () => {
           cleaner:cleaner_id (
             hourly_rate,
             bio,
-            profiles:id (user_type)
+            profiles:cleaner_profiles_id_fkey (user_type)
           )
         `)
         .eq('user_id', userId)
@@ -74,12 +74,12 @@ const ClientDashboard = () => {
             hourly_rate,
             bio,
             years_experience,
-            profiles:id (user_type)
+            profiles:cleaner_profiles_id_fkey (user_type)
           )
         `)
         .eq('client_id', userId)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') throw error;
       return data;
