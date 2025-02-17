@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -36,13 +35,11 @@ const AuthPage = () => {
 
       let authResponse;
       try {
-        authResponse = await supabase.auth.signInWithPassword({
+        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
           email,
-          password,
-          options: {
-            persistSession: rememberMe
-          }
+          password
         });
+        authResponse = { data: authData, error: authError };
         console.log("Auth response received:", authResponse);
       } catch (signInError: any) {
         console.error("Sign in error:", signInError);
