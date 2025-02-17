@@ -38,30 +38,35 @@ function App() {
 
   useEffect(() => {
     // Check initial auth state
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       if (session?.user) {
         // Fetch user profile to get user type
-        supabase
+        const { data } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', session.user.id)
-          .single()
-          .then(({ data }) => {
-            const userType = data?.user_type || null;
-            if (isValidUserType(userType)) {
-              setAuth(session.user.id, userType);
-            } else {
-              setAuth(null, null);
-              console.error('Invalid user type received:', userType);
-            }
-          });
+          .single();
+        
+        const userType = data?.user_type || null;
+        if (isValidUserType(userType)) {
+          setAuth(session.user.id, userType);
+        } else {
+          setAuth(null, null);
+          console.error('Invalid user type received:', userType);
+        }
+      } else {
+        setAuth(null, null);
       }
-    });
+    };
+    checkAuth();
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
+      
       if (session?.user) {
         // Fetch user profile to get user type
         const { data } = await supabase
