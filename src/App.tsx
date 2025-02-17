@@ -15,8 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 interface AuthState {
   isAuthenticated: boolean;
   userId: string | null;
-  userType: 'staff' | 'customer' | null;
-  setAuth: (userId: string | null, userType: 'staff' | 'customer' | null) => void;
+  userType: 'staff' | 'customer' | 'admin' | null;
+  setAuth: (userId: string | null, userType: 'staff' | 'customer' | 'admin' | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -27,8 +27,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isAuthenticated: !!userId, userId, userType }),
 }));
 
-function isValidUserType(type: string | null): type is 'staff' | 'customer' {
-  return type === 'staff' || type === 'customer';
+function isValidUserType(type: string | null): type is 'staff' | 'customer' | 'admin' {
+  return type === 'staff' || type === 'customer' || type === 'admin';
 }
 
 function App() {
