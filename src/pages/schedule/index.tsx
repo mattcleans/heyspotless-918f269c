@@ -1,9 +1,11 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/App";
 import { Loadable } from "@/components/ui/loadable";
 import { useToast } from "@/hooks/use-toast";
+import { MapsLoader } from "@/components/ui/maps-loader";
 import BookingHeader, { BookingStep } from "./components/BookingHeader";
 import DateSelection from "./components/DateSelection";
 import TimeSelection from "./components/TimeSelection";
@@ -117,90 +119,94 @@ const SchedulePage = () => {
   };
 
   const renderStep = () => {
-    switch (currentStep) {
-      case "date":
-        return (
-          <DateSelection
-            date={date}
-            onDateSelect={handleDateSelect}
-            onNext={() => setCurrentStep("time")}
-          />
-        );
-      case "time":
-        return (
-          <TimeSelection
-            time={time}
-            onTimeSelect={setTime}
-            onNext={() => setCurrentStep("quote")}
-          />
-        );
-      case "quote":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#0066B3] text-center">Select Your Service</h2>
-            <Button
-              className="w-full"
-              onClick={() => navigate('/quotes', { state: { date, time } })}
-            >
-              Build New Quote
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setCurrentStep("address")}
-            >
-              Rebook Previous Service
-            </Button>
-          </div>
-        );
-      case "address":
-        return (
-          <AddressAndNotes
-            address={address}
-            notes={notes}
-            onAddressChange={setAddress}
-            onNotesChange={setNotes}
-            onBook={() => setCurrentStep(hasPaymentMethod ? "confirmation" : "payment")}
-            onLoad={setAutocomplete}
-            onPlaceChanged={handlePlaceSelect}
-          />
-        );
-      case "payment":
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-[#0066B3] text-center">Add Payment Method</h2>
-            <Button
-              className="w-full"
-              onClick={() => {
-                // This will be implemented when we add payment processing
-                setCurrentStep("confirmation");
-              }}
-            >
-              Add Payment Method
-            </Button>
-          </div>
-        );
-      case "confirmation":
-        return (
-          <BookingConfirmation
-            date={date!}
-            time={time!}
-            address={address}
-            price={totalPrice}
-          />
-        );
-      default:
-        return null;
-    }
+    const content = (() => {
+      switch (currentStep) {
+        case "date":
+          return (
+            <DateSelection
+              date={date}
+              onDateSelect={handleDateSelect}
+              onNext={() => setCurrentStep("time")}
+            />
+          );
+        case "time":
+          return (
+            <TimeSelection
+              time={time}
+              onTimeSelect={setTime}
+              onNext={() => setCurrentStep("quote")}
+            />
+          );
+        case "quote":
+          return (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-[#0066B3] text-center">Select Your Service</h2>
+              <Button
+                className="w-full"
+                onClick={() => navigate('/quotes', { state: { date, time } })}
+              >
+                Build New Quote
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => setCurrentStep("address")}
+              >
+                Rebook Previous Service
+              </Button>
+            </div>
+          );
+        case "address":
+          return (
+            <MapsLoader>
+              <AddressAndNotes
+                address={address}
+                notes={notes}
+                onAddressChange={setAddress}
+                onNotesChange={setNotes}
+                onBook={() => setCurrentStep(hasPaymentMethod ? "confirmation" : "payment")}
+                onLoad={setAutocomplete}
+                onPlaceChanged={handlePlaceSelect}
+              />
+            </MapsLoader>
+          );
+        case "payment":
+          return (
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold text-[#0066B3] text-center">Add Payment Method</h2>
+              <Button
+                className="w-full"
+                onClick={() => {
+                  // This will be implemented when we add payment processing
+                  setCurrentStep("confirmation");
+                }}
+              >
+                Add Payment Method
+              </Button>
+            </div>
+          );
+        case "confirmation":
+          return (
+            <BookingConfirmation
+              date={date!}
+              time={time!}
+              address={address}
+              price={totalPrice}
+            />
+          );
+        default:
+          return null;
+      }
+    })();
+
+    return <Loadable loading={isSubmitting}>{content}</Loadable>;
   };
 
   return (
     <div className="container mx-auto px-4 py-8">
       <BookingHeader currentStep={currentStep} />
       <div className="max-w-md mx-auto mt-8">
-        <Loadable loading={isSubmitting}>
-          {renderStep()}
-        </Loadable>
+        {renderStep()}
       </div>
     </div>
   );
