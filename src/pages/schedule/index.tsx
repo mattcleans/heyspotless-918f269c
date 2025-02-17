@@ -36,19 +36,11 @@ const BookingPage = () => {
 
   useEffect(() => {
     const fetchGoogleMapsKey = async () => {
-      const { data, error } = await supabase
-        .from('secrets')
-        .select('value')
-        .eq('name', 'GOOGLE_MAPS_API_KEY')
-        .single();
+      const { data: secrets } = await supabase
+        .rpc('get_secret', { secret_name: 'GOOGLE_MAPS_API_KEY' });
       
-      if (error) {
-        console.error('Error fetching Google Maps API key:', error);
-        return;
-      }
-      
-      if (data) {
-        setGoogleMapsApiKey(data.value);
+      if (secrets) {
+        setGoogleMapsApiKey(secrets);
       }
     };
 
