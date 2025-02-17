@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "@/App";
 import ClientDashboard from "./components/ClientDashboard";
@@ -17,6 +17,15 @@ const ClientsPage = () => {
   const navigate = useNavigate();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const setAuth = useAuthStore((state) => state.setAuth);
+
+  useEffect(() => {
+    // Sign out on component mount
+    const signOut = async () => {
+      await supabase.auth.signOut();
+      setAuth(null, null);
+    };
+    signOut();
+  }, [setAuth]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
