@@ -1,5 +1,5 @@
-
-import React from "react";
+import { useAuthStore } from "@/App";
+import { Navigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { 
   Calendar, 
@@ -9,6 +9,7 @@ import {
   TrendingUp,
   Star
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const stats = [
   {
@@ -42,6 +43,18 @@ const stats = [
 ];
 
 const IndexPage = () => {
+  const { isAuthenticated, userType } = useAuthStore();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  // Show different content based on user type
+  if (userType === 'customer') {
+    return <Navigate to="/schedule" replace />;  // Redirect customers to booking page
+  }
+
+  // Staff dashboard remains the same
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col items-center justify-center mb-8">
@@ -62,7 +75,7 @@ const IndexPage = () => {
         {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={index} className="p-6 hover-scale glass-card">
+            <Card key={index} className="p-6 hover:scale-105 transition-transform duration-200">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-[#1B365D]/60">{stat.title}</p>
@@ -81,8 +94,8 @@ const IndexPage = () => {
         })}
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="p-6 glass-card">
+      <div className="grid gap-6 md:grid-cols-2 mt-8">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4 text-[#1B365D]">Upcoming Appointments</h3>
           <div className="space-y-4">
             {[1, 2, 3].map((_, index) => (
@@ -103,7 +116,7 @@ const IndexPage = () => {
           </div>
         </Card>
 
-        <Card className="p-6 glass-card">
+        <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4 text-[#1B365D]">Recent Activity</h3>
           <div className="space-y-4">
             {[1, 2, 3].map((_, index) => (
