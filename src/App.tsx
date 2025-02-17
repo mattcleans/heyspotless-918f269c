@@ -28,14 +28,17 @@ export const useAuthStore = create<AuthStore>((set) => ({
 const getUserTypeFromDomain = () => {
   const hostname = window.location.hostname;
   
-  // Handle development environment
-  if (hostname === 'localhost' || hostname.includes('lovableproject.com')) {
-    return 'staff'; // Default to staff interface in development
+  // Handle development environment and preview
+  if (hostname === 'localhost' || 
+      hostname.includes('127.0.0.1') || 
+      hostname.includes('lovableproject.com') ||
+      hostname.includes('gptengineer.app')) {
+    return 'customer'; // Default to customer interface in development
   }
   
   if (hostname.startsWith('staff.')) return 'staff';
   if (hostname.startsWith('portal.')) return 'customer';
-  return null;
+  return 'customer'; // Default to customer interface if no subdomain match
 };
 
 const ProtectedRoute = ({ children, allowedUserType }: { children: React.ReactNode; allowedUserType: 'staff' | 'customer' | null }) => {
@@ -60,18 +63,7 @@ const App = () => {
   const queryClient = new QueryClient();
   const userType = useAuthStore((state) => state.userType);
 
-  // If no valid subdomain is detected, show an error
-  if (!userType) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Invalid Domain</h1>
-          <p>Please access through portal.heyspotless.com or staff.heyspotless.com</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Always render the app now, with a default user type
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
