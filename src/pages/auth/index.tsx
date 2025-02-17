@@ -50,7 +50,16 @@ const AuthPage = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's a rate limit error
+        if (error.status === 429) {
+          const body = JSON.parse(error.body);
+          if (body.code === "over_email_send_rate_limit") {
+            throw new Error("Please wait a minute before trying to sign up again.");
+          }
+        }
+        throw error;
+      }
 
       toast({
         title: "Success",
