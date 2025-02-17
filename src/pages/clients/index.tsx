@@ -58,7 +58,13 @@ const ClientsPage = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Check if it's a "user already exists" error
+        if (error.message.includes("User already registered") || error.status === 422) {
+          throw new Error("An account with this email already exists. Please sign in instead.");
+        }
+        throw error;
+      }
 
       toast.success('Check your email to confirm your account!');
     } catch (error: any) {
