@@ -81,7 +81,11 @@ const Sidebar = () => {
         <div className="flex flex-col h-full">
           <div className="p-6">
             <div className="flex items-center space-x-2">
-              <h1 className="text-2xl font-semibold text-[#0066B3]">Hey Spotless</h1>
+              <img 
+                src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
+                alt="Hey Spotless Logo" 
+                className="h-8 object-contain"
+              />
             </div>
             <p className="text-sm text-[#1B365D] mt-1">
               {userType === 'staff' ? 'Staff Portal' : 'Customer Portal'}
