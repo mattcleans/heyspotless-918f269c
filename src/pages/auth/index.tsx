@@ -26,12 +26,17 @@ const AuthPage = () => {
     setShowVerifyAlert(false);
     
     try {
+      console.log("Starting login process...");
+      
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log("Sign in response:", { data, error });
+
       if (error) {
+        console.error("Login error:", error);
         if (error.message.includes("Email not confirmed")) {
           setShowVerifyAlert(true);
           throw new Error("Please verify your email address before signing in. Check your inbox for a confirmation link.");
@@ -48,17 +53,27 @@ const AuthPage = () => {
       }
 
       if (data.user) {
+        console.log("User authenticated, fetching profile...");
+        
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', data.user.id)
           .single();
 
+        console.log("Profile fetch response:", { profileData, profileError });
+
         if (profileError) {
+          console.error("Profile fetch error:", profileError);
           throw new Error("Could not fetch user profile. Please try again.");
         }
 
         if (profileData?.user_type) {
+          console.log("Setting auth state with:", {
+            userId: data.user.id,
+            userType: profileData.user_type
+          });
+          
           setAuth(data.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
           navigate("/", { replace: true });
           toast({
@@ -66,10 +81,12 @@ const AuthPage = () => {
             description: "Successfully logged in!",
           });
         } else {
+          console.error("No user type found in profile");
           throw new Error("User profile not found. Please contact support.");
         }
       }
     } catch (error: any) {
+      console.error("Final error caught:", error);
       toast({
         title: "Login Failed",
         description: error.message,
@@ -87,6 +104,8 @@ const AuthPage = () => {
     setShowVerifyAlert(false);
     
     try {
+      console.log("Starting signup process...");
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -97,7 +116,10 @@ const AuthPage = () => {
         }
       });
 
+      console.log("Signup response:", { data, error });
+
       if (error) {
+        console.error("Signup error:", error);
         if (error.status === 429) {
           throw new Error("Please wait a minute before trying to sign up again.");
         }
@@ -114,6 +136,7 @@ const AuthPage = () => {
         setPassword("");
       }
     } catch (error: any) {
+      console.error("Final signup error:", error);
       toast({
         title: "Registration Failed",
         description: error.message,
