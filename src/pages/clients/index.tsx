@@ -28,7 +28,12 @@ const ClientsPage = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message === 'Invalid login credentials') {
+          throw new Error('Email or password is incorrect. Please try again.');
+        }
+        throw error;
+      }
 
       if (data.user) {
         // Fetch user profile to get user type
