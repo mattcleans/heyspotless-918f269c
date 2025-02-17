@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { 
@@ -43,7 +44,7 @@ const stats = [
 const IndexPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center mb-8">
         <img 
           src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
           alt="Hey Spotless Logo" 
