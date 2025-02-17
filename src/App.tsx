@@ -37,70 +37,110 @@ function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    const checkAuth = async () => {
+    // Initial session check
+    const initializeAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Checking initial session...");
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          setAuth(null, null);
+          return;
+        }
 
         if (session?.user) {
+          console.log("Found existing session for user:", session.user.id);
           const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('user_type')
             .eq('id', session.user.id)
             .maybeSingle();
 
-          if (profileError || !profileData) {
+          if (profileError) {
+            console.error("Profile fetch error:", profileError);
             setAuth(null, null);
             return;
           }
 
-          const userType = profileData?.user_type || null;
+          if (!profileData) {
+            console.error("No profile found for user:", session.user.id);
+            setAuth(null, null);
+            return;
+          }
+
+          const userType = profileData.user_type;
           if (isValidUserType(userType)) {
+            console.log("Setting auth state with:", {
+              userId: session.user.id,
+              userType: userType
+            });
             setAuth(session.user.id, userType);
           } else {
+            console.error("Invalid user type:", userType);
             setAuth(null, null);
           }
         } else {
+          console.log("No active session found");
           setAuth(null, null);
         }
       } catch (error) {
+        console.error("Error during auth initialization:", error);
         setAuth(null, null);
       }
     };
 
-    checkAuth();
+    // Initialize auth state
+    initializeAuth();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session?.user?.id);
+      
+      if (event === 'SIGNED_OUT' || !session) {
+        console.log("User signed out or session ended");
         setAuth(null, null);
         return;
       }
 
       if (session?.user) {
+        console.log("Session updated for user:", session.user.id);
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', session.user.id)
           .maybeSingle();
 
-        if (profileError || !profileData) {
+        if (profileError) {
+          console.error("Profile fetch error:", profileError);
           setAuth(null, null);
           return;
         }
 
-        const userType = profileData?.user_type || null;
+        if (!profileData) {
+          console.error("No profile found for user:", session.user.id);
+          setAuth(null, null);
+          return;
+        }
+
+        const userType = profileData.user_type;
         if (isValidUserType(userType)) {
+          console.log("Updating auth state with:", {
+            userId: session.user.id,
+            userType: userType
+          });
           setAuth(session.user.id, userType);
         } else {
+          console.error("Invalid user type:", userType);
           setAuth(null, null);
         }
-      } else {
-        setAuth(null, null);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log("Cleaning up auth subscription");
+      subscription.unsubscribe();
+    };
   }, [setAuth]);
 
   return (
