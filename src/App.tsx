@@ -38,28 +38,39 @@ function App() {
   useEffect(() => {
     // Check initial auth state
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('user_type')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching user profile:', error);
-          setAuth(null, null);
-          return;
-        }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Initial session check:", session);
 
-        const userType = profileData?.user_type || null;
-        if (isValidUserType(userType)) {
-          setAuth(session.user.id, userType);
+        if (session?.user) {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('user_type')
+            .eq('id', session.user.id)
+            .single();
+          
+          console.log("Profile data:", profileData, "Error:", error);
+
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            setAuth(null, null);
+            return;
+          }
+
+          const userType = profileData?.user_type || null;
+          if (isValidUserType(userType)) {
+            console.log("Setting auth state with:", { userId: session.user.id, userType });
+            setAuth(session.user.id, userType);
+          } else {
+            console.error('Invalid user type received:', userType);
+            setAuth(null, null);
+          }
         } else {
+          console.log("No session found, clearing auth state");
           setAuth(null, null);
-          console.error('Invalid user type received:', userType);
         }
-      } else {
+      } catch (error) {
+        console.error("Error in checkAuth:", error);
         setAuth(null, null);
       }
     };
@@ -72,27 +83,36 @@ function App() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
       
-      if (session?.user) {
-        const { data: profileData, error } = await supabase
-          .from('profiles')
-          .select('user_type')
-          .eq('id', session.user.id)
-          .single();
-        
-        if (error) {
-          console.error('Error fetching user profile:', error);
-          setAuth(null, null);
-          return;
-        }
+      try {
+        if (session?.user) {
+          const { data: profileData, error } = await supabase
+            .from('profiles')
+            .select('user_type')
+            .eq('id', session.user.id)
+            .single();
+          
+          console.log("Profile data on auth change:", profileData, "Error:", error);
 
-        const userType = profileData?.user_type || null;
-        if (isValidUserType(userType)) {
-          setAuth(session.user.id, userType);
+          if (error) {
+            console.error('Error fetching user profile:', error);
+            setAuth(null, null);
+            return;
+          }
+
+          const userType = profileData?.user_type || null;
+          if (isValidUserType(userType)) {
+            console.log("Setting auth state with:", { userId: session.user.id, userType });
+            setAuth(session.user.id, userType);
+          } else {
+            console.error('Invalid user type received:', userType);
+            setAuth(null, null);
+          }
         } else {
+          console.log("No session in auth change, clearing auth state");
           setAuth(null, null);
-          console.error('Invalid user type received:', userType);
         }
-      } else {
+      } catch (error) {
+        console.error("Error in auth change handler:", error);
         setAuth(null, null);
       }
     });
