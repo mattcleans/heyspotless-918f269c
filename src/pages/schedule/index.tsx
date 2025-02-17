@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +9,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const timeSlots = [
   "9:00 AM",
@@ -28,12 +30,28 @@ const BookingPage = () => {
   const [step, setStep] = useState(1);
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
+  const navigate = useNavigate();
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
+    googleMapsApiKey: "AIzaSyALT9I9449_IzUWgWYFh5U0eIuWA2UBBQU",
     libraries: libraries as ["places"],
   });
+
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error("Please sign in to make a booking");
+        navigate("/");
+        return;
+      }
+      setUserId(user.id);
+    };
+    
+    checkUser();
+  }, [navigate]);
 
   const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
     setAutocomplete(autocomplete);
@@ -53,7 +71,7 @@ const BookingPage = () => {
   };
 
   const handleBook = async () => {
-    if (!date) return;
+    if (!date || !userId) return;
     
     try {
       const formattedDate = format(date, 'yyyy-MM-dd');
@@ -65,12 +83,16 @@ const BookingPage = () => {
           time: time || '',
           address,
           notes,
-          status: 'pending'
+          status: 'pending',
+          user_id: userId
         });
 
-      if (error) throw error;
+      if (error) {
+        toast.error("Failed to create booking");
+        throw error;
+      }
       
-      console.log('Booking successful:', data);
+      toast.success("Booking created successfully!");
       setStep(step + 1);
     } catch (error) {
       console.error('Error creating booking:', error);
@@ -79,6 +101,7 @@ const BookingPage = () => {
 
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading...</div>;
+  if (!userId) return <div>Loading...</div>;
 
   return (
     <div className="mx-auto max-w-xl animate-fade-in">
