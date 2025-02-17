@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/App";
 import { AuthCard } from "./components/AuthCard";
 import { LoginForm } from "./components/LoginForm";
@@ -36,6 +36,14 @@ const AuthPage = () => {
           setShowVerifyAlert(true);
           throw new Error("Please verify your email address before signing in. Check your inbox for a confirmation link.");
         }
+        if (error.message.includes("Invalid login credentials")) {
+          throw new Error(
+            "Login failed. Please check that:\n" +
+            "1. You've entered the correct email address\n" +
+            "2. Your password is correct\n" +
+            "3. You've registered an account (use the Register tab if you haven't)"
+          );
+        }
         throw error;
       }
 
@@ -62,15 +70,9 @@ const AuthPage = () => {
         }
       }
     } catch (error: any) {
-      let errorMessage = "An error occurred during login. Please try again.";
-      
-      if (error.message.includes("Invalid login credentials")) {
-        errorMessage = "Incorrect email or password. Please try again.";
-      }
-
       toast({
-        title: "Error",
-        description: errorMessage,
+        title: "Login Failed",
+        description: error.message,
         variant: "destructive",
       });
       console.error("Login error:", error);
@@ -112,7 +114,7 @@ const AuthPage = () => {
       }
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Registration Failed",
         description: error.message,
         variant: "destructive",
       });
