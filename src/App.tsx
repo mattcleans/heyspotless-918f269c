@@ -36,11 +36,9 @@ function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    // Check initial auth state
     const checkAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        console.log("Initial session check:", session);
 
         if (session?.user) {
           const { data: profileData, error: profileError } = await supabase
@@ -48,76 +46,55 @@ function App() {
             .select('user_type')
             .eq('id', session.user.id)
             .maybeSingle();
-          
-          console.log("Profile data:", profileData, "Error:", profileError);
 
-          if (profileError) {
-            console.error('Error fetching user profile:', profileError);
+          if (profileError || !profileData) {
             setAuth(null, null);
             return;
           }
 
           const userType = profileData?.user_type || null;
           if (isValidUserType(userType)) {
-            console.log("Setting auth state with:", { userId: session.user.id, userType });
             setAuth(session.user.id, userType);
           } else {
-            console.error('Invalid user type received:', userType);
             setAuth(null, null);
           }
         } else {
-          console.log("No session found, clearing auth state");
           setAuth(null, null);
         }
       } catch (error) {
-        console.error("Error in checkAuth:", error);
         setAuth(null, null);
       }
     };
 
     checkAuth();
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
-      
       if (event === 'SIGNED_OUT') {
         setAuth(null, null);
         return;
       }
 
-      try {
-        if (session?.user) {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('user_type')
-            .eq('id', session.user.id)
-            .maybeSingle();
-          
-          console.log("Profile data on auth change:", profileData, "Error:", profileError);
+      if (session?.user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', session.user.id)
+          .maybeSingle();
 
-          if (profileError) {
-            console.error('Error fetching user profile:', profileError);
-            setAuth(null, null);
-            return;
-          }
+        if (profileError || !profileData) {
+          setAuth(null, null);
+          return;
+        }
 
-          const userType = profileData?.user_type || null;
-          if (isValidUserType(userType)) {
-            console.log("Setting auth state with:", { userId: session.user.id, userType });
-            setAuth(session.user.id, userType);
-          } else {
-            console.error('Invalid user type received:', userType);
-            setAuth(null, null);
-          }
+        const userType = profileData?.user_type || null;
+        if (isValidUserType(userType)) {
+          setAuth(session.user.id, userType);
         } else {
-          console.log("No session in auth change, clearing auth state");
           setAuth(null, null);
         }
-      } catch (error) {
-        console.error("Error in auth change handler:", error);
+      } else {
         setAuth(null, null);
       }
     });
