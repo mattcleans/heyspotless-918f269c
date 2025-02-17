@@ -9,38 +9,262 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          is_primary: boolean | null
+          postal_code: string
+          state: string
+          street: string
+          user_id: string | null
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          postal_code: string
+          state: string
+          street: string
+          user_id?: string | null
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          is_primary?: boolean | null
+          postal_code?: string
+          state?: string
+          street?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookings: {
         Row: {
           address: string
+          cleaner_id: string | null
           created_at: string
           date: string
+          duration: number | null
           id: string
           notes: string | null
+          price: number | null
           status: string
           time: string
           user_id: string | null
         }
         Insert: {
           address: string
+          cleaner_id?: string | null
           created_at?: string
           date: string
+          duration?: number | null
           id?: string
           notes?: string | null
+          price?: number | null
           status?: string
           time: string
           user_id?: string | null
         }
         Update: {
           address?: string
+          cleaner_id?: string | null
           created_at?: string
           date?: string
+          duration?: number | null
           id?: string
           notes?: string | null
+          price?: number | null
           status?: string
           time?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookings_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cleaner_profiles: {
+        Row: {
+          availability: Json | null
+          bio: string | null
+          created_at: string
+          hourly_rate: number
+          id: string
+          status: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          availability?: Json | null
+          bio?: string | null
+          created_at?: string
+          hourly_rate: number
+          id: string
+          status?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          availability?: Json | null
+          bio?: string | null
+          created_at?: string
+          hourly_rate?: number
+          id?: string
+          status?: string | null
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cleaner_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_cleaner_matches: {
+        Row: {
+          cleaner_id: string | null
+          client_id: string | null
+          id: string
+          matched_at: string
+          status: string | null
+        }
+        Insert: {
+          cleaner_id?: string | null
+          client_id?: string | null
+          id?: string
+          matched_at?: string
+          status?: string | null
+        }
+        Update: {
+          cleaner_id?: string | null
+          client_id?: string | null
+          id?: string
+          matched_at?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_cleaner_matches_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_cleaner_matches_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      earnings: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          cleaner_id: string | null
+          created_at: string
+          id: string
+          paid_at: string | null
+          status: string | null
+          tip_amount: number | null
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          cleaner_id?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          status?: string | null
+          tip_amount?: number | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          cleaner_id?: string | null
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          status?: string | null
+          tip_amount?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "earnings_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "earnings_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_methods: {
+        Row: {
+          card_type: string
+          created_at: string
+          expiry_month: number
+          expiry_year: number
+          id: string
+          is_default: boolean | null
+          last_four: string
+          user_id: string | null
+        }
+        Insert: {
+          card_type: string
+          created_at?: string
+          expiry_month: number
+          expiry_year: number
+          id?: string
+          is_default?: boolean | null
+          last_four: string
+          user_id?: string | null
+        }
+        Update: {
+          card_type?: string
+          created_at?: string
+          expiry_month?: number
+          expiry_year?: number
+          id?: string
+          is_default?: boolean | null
+          last_four?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_methods_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -59,6 +283,58 @@ export type Database = {
           user_type?: string
         }
         Relationships: []
+      }
+      reviews: {
+        Row: {
+          booking_id: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewee_id: string | null
+          reviewer_id: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewee_id?: string | null
+          reviewer_id?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewee_id?: string | null
+          reviewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewee_id_fkey"
+            columns: ["reviewee_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       secrets: {
         Row: {
