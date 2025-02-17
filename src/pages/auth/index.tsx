@@ -5,25 +5,29 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuthStore } from "@/App";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [userType, setUserType] = useState<'customer' | 'staff'>('customer');
   const [loading, setLoading] = useState(false);
+  const [showVerifyAlert, setShowVerifyAlert] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return; // Prevent multiple submissions
     setLoading(true);
+    setShowVerifyAlert(false);
     
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -31,10 +35,15 @@ const AuthPage = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("Email not confirmed")) {
+          setShowVerifyAlert(true);
+          throw new Error("Please verify your email address before signing in. Check your inbox for a confirmation link.");
+        }
+        throw error;
+      }
 
       if (data.user) {
-        // Fetch user profile to get user type
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('user_type')
@@ -61,8 +70,6 @@ const AuthPage = () => {
       
       if (error.message.includes("Invalid login credentials")) {
         errorMessage = "Incorrect email or password. Please try again.";
-      } else if (error.message.includes("Email not confirmed")) {
-        errorMessage = "Please check your email and click the confirmation link before signing in.";
       }
 
       toast({
@@ -78,7 +85,9 @@ const AuthPage = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return; // Prevent multiple submissions
     setLoading(true);
+    setShowVerifyAlert(false);
     
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -99,6 +108,7 @@ const AuthPage = () => {
       }
 
       if (data.user) {
+        setShowVerifyAlert(true);
         toast({
           title: "Success",
           description: "Please check your email for a confirmation link to complete your registration.",
@@ -126,6 +136,16 @@ const AuthPage = () => {
             className="h-16 object-contain"
           />
         </div>
+
+        {showVerifyAlert && (
+          <Alert className="mb-6">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Please check your email and click the verification link to complete your registration.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <Tabs defaultValue="login" className="space-y-6">
           <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="login">Login</TabsTrigger>
@@ -141,6 +161,7 @@ const AuthPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="space-y-2">
@@ -150,6 +171,7 @@ const AuthPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
               <Button 
@@ -172,6 +194,7 @@ const AuthPage = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="space-y-2">
@@ -181,6 +204,7 @@ const AuthPage = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  disabled={loading}
                 />
               </div>
               <div className="space-y-2">
@@ -189,6 +213,7 @@ const AuthPage = () => {
                   value={userType} 
                   onValueChange={(value: 'customer' | 'staff') => setUserType(value)}
                   className="flex gap-4"
+                  disabled={loading}
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="customer" id="customer" />
