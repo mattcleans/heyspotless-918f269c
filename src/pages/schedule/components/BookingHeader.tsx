@@ -1,24 +1,30 @@
 
-import React from "react";
+import { Steps } from "@/components/ui/steps";
 
-type BookingStep = "date" | "time" | "address" | "confirmation";
+export type BookingStep = "date" | "time" | "quote" | "address" | "payment" | "confirmation";
 
 interface BookingHeaderProps {
   currentStep: BookingStep;
 }
 
 const BookingHeader = ({ currentStep }: BookingHeaderProps) => {
+  const steps = [
+    { label: "Date", value: "date" },
+    { label: "Time", value: "time" },
+    { label: "Quote", value: "quote" },
+    { label: "Address", value: "address" },
+    { label: "Payment", value: "payment" },
+    { label: "Confirmation", value: "confirmation" },
+  ];
+
+  const currentStepIndex = steps.findIndex((step) => step.value === currentStep);
+
   return (
-    <div className="text-center mb-8">
-      <div className="flex items-center justify-center mb-2">
-        <img 
-          src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
-          alt="Hey Spotless Logo" 
-          className="h-12 object-contain"
-        />
-      </div>
-      <p className="text-[#1B365D]">Dallas Cleaning Professionals</p>
-      <p className="text-sm text-[#1B365D]/60 mt-1">GOODBYE SPOTS • HELLO SPARKLE</p>
+    <div className="w-full max-w-3xl mx-auto">
+      <Steps
+        steps={steps}
+        currentStep={currentStepIndex}
+      />
     </div>
   );
 };

@@ -1,19 +1,16 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/App";
 import { Loadable } from "@/components/ui/loadable";
 import { useToast } from "@/hooks/use-toast";
-import BookingHeader from "./components/BookingHeader";
+import BookingHeader, { BookingStep } from "./components/BookingHeader";
 import DateSelection from "./components/DateSelection";
 import TimeSelection from "./components/TimeSelection";
 import AddressAndNotes from "./components/AddressAndNotes";
 import BookingConfirmation from "./components/BookingConfirmation";
 import { QuoteSummary } from "../quotes/components/QuoteSummary";
 import { Button } from "@/components/ui/button";
-
-type BookingStep = "date" | "time" | "quote" | "address" | "payment" | "confirmation";
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -102,36 +99,10 @@ const SchedulePage = () => {
 
       if (bookingError) throw bookingError;
 
-      // Get user profile data for notifications
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, phone, email')
-        .eq('id', userId)
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Send confirmation notifications
-      const { error: notificationError } = await supabase.functions.invoke('send-booking-confirmation', {
-        body: {
-          email: profileData.email,
-          phone: profileData.phone,
-          date: date.toLocaleDateString(),
-          time,
-          address,
-          price: totalPrice,
-        },
-      });
-
-      if (notificationError) {
-        console.error('Notification error:', notificationError);
-        // Don't throw here - we want to show success even if notifications fail
-      }
-
       setCurrentStep("confirmation");
       toast({
         title: "Booking Successful",
-        description: "Your cleaning service has been scheduled. Check your email for confirmation details."
+        description: "Your cleaning service has been scheduled."
       });
     } catch (error: any) {
       console.error('Booking error:', error);
