@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { FrequencySelector } from "./components/FrequencySelector";
 import { RoomSelector } from "./components/RoomSelector";
 import { ExtrasSelector } from "./components/ExtrasSelector";
@@ -63,6 +64,7 @@ const extraServices: ExtraService[] = [
 ];
 
 const QuotePage = () => {
+  const navigate = useNavigate();
   const [selectedFrequency, setSelectedFrequency] = useState<string>("one-time");
   const [roomCounts, setRoomCounts] = useState<RoomCounts>({});
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
@@ -129,7 +131,16 @@ const QuotePage = () => {
   }, [selectedFrequency, roomCounts, selectedExtras, selectedServiceType]);
 
   const handleBookNow = () => {
-    console.log("Book now clicked");
+    navigate('/schedule', {
+      state: {
+        quoteDetails: {
+          total,
+          frequency: selectedFrequency,
+          frequencyName: frequencies.find(f => f.id === selectedFrequency)?.name || "",
+          serviceTypeName: selectedServiceType?.name || ""
+        }
+      }
+    });
   };
 
   return (
@@ -167,7 +178,7 @@ const QuotePage = () => {
 
       <QuoteSummary
         total={total}
-        frequencyName={frequencies.find((f) => f.id === selectedFrequency)?.name || ""}
+        frequencyName={frequencies.find(f => f.id === selectedFrequency)?.name || ""}
         serviceTypeName={selectedServiceType?.name || ""}
         onBookNow={handleBookNow}
       />

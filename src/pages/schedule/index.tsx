@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +10,18 @@ import DateSelection from "./components/DateSelection";
 import TimeSelection from "./components/TimeSelection";
 import AddressAndNotes from "./components/AddressAndNotes";
 import BookingConfirmation from "./components/BookingConfirmation";
-import { QuoteSummary } from "../quotes/components/QuoteSummary";
 import { Button } from "@/components/ui/button";
+
+interface QuoteDetails {
+  total: number;
+  frequency: string;
+  frequencyName: string;
+  serviceTypeName: string;
+}
+
+interface LocationState {
+  quoteDetails?: QuoteDetails;
+}
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -29,24 +38,17 @@ const SchedulePage = () => {
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasPaymentMethod, setHasPaymentMethod] = useState(false);
+  const [serviceTypeName, setServiceTypeName] = useState("");
 
   useEffect(() => {
-    const checkPaymentMethods = async () => {
-      if (!userId) return;
-      
-      const { data, error } = await supabase
-        .from('payment_methods')
-        .select('id')
-        .eq('user_id', userId)
-        .limit(1);
-      
-      if (!error && data) {
-        setHasPaymentMethod(data.length > 0);
-      }
-    };
-
-    checkPaymentMethods();
-  }, [userId]);
+    const state = location.state as LocationState;
+    if (state?.quoteDetails) {
+      setTotalPrice(state.quoteDetails.total);
+      setSelectedFrequency(state.quoteDetails.frequency);
+      setServiceTypeName(state.quoteDetails.serviceTypeName);
+      setCurrentStep("date");
+    }
+  }, [location.state]);
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate && selectedDate < new Date()) {
@@ -86,7 +88,6 @@ const SchedulePage = () => {
     try {
       setIsSubmitting(true);
       
-      // Create the booking
       const { error: bookingError } = await supabase
         .from('bookings')
         .insert({
