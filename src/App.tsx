@@ -27,7 +27,6 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isAuthenticated: !!userId, userId, userType }),
 }));
 
-// Type guard to check if the user type is valid
 function isValidUserType(type: string | null): type is 'staff' | 'customer' {
   return type === 'staff' || type === 'customer';
 }
@@ -37,50 +36,36 @@ function App() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    // Check initial auth state
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    // Initial session check
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
-        // Fetch user profile to get user type
-        const { data } = await supabase
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', session.user.id)
           .single();
         
-        const userType = data?.user_type || null;
+        const userType = profileData?.user_type || null;
         if (isValidUserType(userType)) {
           setAuth(session.user.id, userType);
-        } else {
-          setAuth(null, null);
-          console.error('Invalid user type received:', userType);
         }
-      } else {
-        setAuth(null, null);
       }
-    };
-    checkAuth();
+    });
 
     // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, session);
-      
       if (session?.user) {
-        // Fetch user profile to get user type
-        const { data } = await supabase
+        const { data: profileData } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', session.user.id)
           .single();
         
-        const userType = data?.user_type || null;
+        const userType = profileData?.user_type || null;
         if (isValidUserType(userType)) {
           setAuth(session.user.id, userType);
-        } else {
-          setAuth(null, null);
-          console.error('Invalid user type received:', userType);
         }
       } else {
         setAuth(null, null);
@@ -90,28 +75,21 @@ function App() {
     return () => subscription.unsubscribe();
   }, [setAuth]);
 
+  // Protected routes wrapper
+  const ProtectedRoute = ({ element }: { element: React.ReactNode }) => {
+    return isAuthenticated ? element : <Navigate to="/auth" replace />;
+  };
+
   return (
     <BrowserRouter>
       <Routes>
         <Route 
           path="/auth" 
-          element={
-            isAuthenticated ? (
-              <Navigate to="/" replace />
-            ) : (
-              <AuthPage />
-            )
-          } 
+          element={isAuthenticated ? <Navigate to="/" replace /> : <AuthPage />} 
         />
         <Route
           path="/"
-          element={
-            isAuthenticated ? (
-              <Layout />
-            ) : (
-              <Navigate to="/auth" replace />
-            )
-          }
+          element={<ProtectedRoute element={<Layout />} />}
         >
           <Route index element={<IndexPage />} />
           <Route path="clients" element={<ClientsPage />} />
