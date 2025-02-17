@@ -14,10 +14,13 @@ const ClientsPage = () => {
       <div className="min-h-[80vh] flex items-center justify-center p-6">
         <Card className="w-full max-w-md p-8 space-y-6">
           <div className="text-center space-y-2">
-            <div className="flex items-center justify-center mb-2">
-              <Star className="w-8 h-8 text-[#FFD700]" />
+            <div className="flex items-center justify-center mb-4">
+              <img 
+                src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
+                alt="Hey Spotless Logo" 
+                className="h-16 object-contain"
+              />
             </div>
-            <h1 className="text-2xl font-bold text-[#0066B3]">Welcome Back</h1>
             <p className="text-[#1B365D]/60">Sign in to manage your services</p>
           </div>
           
