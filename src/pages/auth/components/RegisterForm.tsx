@@ -69,7 +69,7 @@ export const RegisterForm = ({
         <Label>I am a:</Label>
         <RadioGroup 
           value={userType} 
-          onValueChange={onUserTypeChange}
+          onValueChange={(value: 'customer' | 'staff') => onUserTypeChange(value)}
           className="flex flex-wrap gap-4"
           disabled={loading}
         >
@@ -80,10 +80,6 @@ export const RegisterForm = ({
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="staff" id="staff" />
             <Label htmlFor="staff">Staff Member</Label>
-          </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="admin" id="admin" />
-            <Label htmlFor="admin">Admin</Label>
           </div>
         </RadioGroup>
       </div>
