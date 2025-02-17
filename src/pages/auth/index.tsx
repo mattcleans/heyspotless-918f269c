@@ -25,11 +25,15 @@ const AuthPage = () => {
     setLoading(true);
     setShowVerifyAlert(false);
     
+    console.log("Attempting login with email:", email);
+    
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
+
+      console.log("Login response:", { data, error });
 
       if (error) {
         if (error.message.includes("Email not confirmed")) {
@@ -48,11 +52,15 @@ const AuthPage = () => {
       }
 
       if (data.user) {
+        console.log("User authenticated, fetching profile...");
+        
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', data.user.id)
           .single();
+
+        console.log("Profile response:", { profileData, profileError });
 
         if (profileError) {
           throw new Error("Could not fetch user profile. Please try again.");
@@ -70,12 +78,18 @@ const AuthPage = () => {
         }
       }
     } catch (error: any) {
+      console.error("Detailed login error:", {
+        error,
+        message: error.message,
+        code: error.code,
+        details: error.details
+      });
+      
       toast({
         title: "Login Failed",
         description: error.message,
         variant: "destructive",
       });
-      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -86,6 +100,8 @@ const AuthPage = () => {
     if (loading) return;
     setLoading(true);
     setShowVerifyAlert(false);
+    
+    console.log("Attempting signup with email:", email);
     
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -98,6 +114,8 @@ const AuthPage = () => {
         }
       });
 
+      console.log("Signup response:", { data, error });
+
       if (error) {
         if (error.status === 429) {
           throw new Error("Please wait a minute before trying to sign up again.");
@@ -109,16 +127,25 @@ const AuthPage = () => {
         setShowVerifyAlert(true);
         toast({
           title: "Success",
-          description: "Please check your email for a confirmation link to complete your registration.",
+          description: "Registration successful! You can now log in.",
         });
+        // Clear the form after successful registration
+        setEmail("");
+        setPassword("");
       }
     } catch (error: any) {
+      console.error("Detailed signup error:", {
+        error,
+        message: error.message,
+        code: error.code,
+        details: error.details
+      });
+      
       toast({
         title: "Registration Failed",
         description: error.message,
         variant: "destructive",
       });
-      console.error("Signup error:", error);
     } finally {
       setLoading(false);
     }
