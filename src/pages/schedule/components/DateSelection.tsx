@@ -21,14 +21,16 @@ const DateSelection = ({ date, onDateSelect, onNext }: DateSelectionProps) => {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-[#0066B3] text-center">PICK A DAY</h2>
-      <div className="p-4 bg-white rounded-lg shadow-lg">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={handleDateSelect}
-          disabled={(date) => !isAfter(startOfDay(date), startOfDay(new Date()))}
-          className="rounded-md border"
-        />
+      <div className="flex justify-center">
+        <div className="w-full max-w-[350px] p-4 bg-white rounded-lg shadow-lg">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={handleDateSelect}
+            disabled={(date) => !isAfter(startOfDay(date), startOfDay(new Date()))}
+            className="mx-auto"
+          />
+        </div>
       </div>
       <Button
         onClick={onNext}
