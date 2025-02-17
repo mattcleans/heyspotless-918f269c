@@ -43,16 +43,16 @@ function App() {
         console.log("Initial session check:", session);
 
         if (session?.user) {
-          const { data: profileData, error } = await supabase
+          const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('user_type')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
           
-          console.log("Profile data:", profileData, "Error:", error);
+          console.log("Profile data:", profileData, "Error:", profileError);
 
-          if (error) {
-            console.error('Error fetching user profile:', error);
+          if (profileError) {
+            console.error('Error fetching user profile:', profileError);
             setAuth(null, null);
             return;
           }
@@ -83,18 +83,23 @@ function App() {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
       
+      if (event === 'SIGNED_OUT') {
+        setAuth(null, null);
+        return;
+      }
+
       try {
         if (session?.user) {
-          const { data: profileData, error } = await supabase
+          const { data: profileData, error: profileError } = await supabase
             .from('profiles')
             .select('user_type')
             .eq('id', session.user.id)
-            .single();
+            .maybeSingle();
           
-          console.log("Profile data on auth change:", profileData, "Error:", error);
+          console.log("Profile data on auth change:", profileData, "Error:", profileError);
 
-          if (error) {
-            console.error('Error fetching user profile:', error);
+          if (profileError) {
+            console.error('Error fetching user profile:', profileError);
             setAuth(null, null);
             return;
           }
