@@ -41,7 +41,7 @@ export const RegisterForm = ({
           disabled={loading}
         />
       </div>
-      <div className="space-y-2 relative">
+      <div className="relative">
         <Input
           type={showPassword ? "text" : "password"}
           placeholder="Password"
@@ -49,12 +49,13 @@ export const RegisterForm = ({
           onChange={onPasswordChange}
           required
           disabled={loading}
+          className="pr-10"
         />
         <Button
           type="button"
           variant="ghost"
-          size="icon"
-          className="absolute right-2 top-1/2 -translate-y-1/2"
+          size="sm"
+          className="absolute right-2 top-1/2 -translate-y-1/2 h-auto p-0"
           onClick={() => setShowPassword(!showPassword)}
         >
           {showPassword ? (
