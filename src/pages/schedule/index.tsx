@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
@@ -36,8 +37,13 @@ const BookingPage = () => {
 
   useEffect(() => {
     const fetchGoogleMapsKey = async () => {
-      const { data: secrets } = await supabase
+      const { data: secrets, error } = await supabase
         .rpc('get_secret', { secret_name: 'GOOGLE_MAPS_API_KEY' });
+      
+      if (error) {
+        console.error('Error fetching Google Maps API key:', error);
+        return;
+      }
       
       if (secrets) {
         setGoogleMapsApiKey(secrets);
