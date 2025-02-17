@@ -26,25 +26,36 @@ const AuthPage = () => {
     setLoading(true);
     
     try {
+      // First check if the user exists
+      const { data: existingUser, error: userError } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (userError) {
+        // If user doesn't exist
+        throw new Error("No account found with this email. Please sign up first.");
+      }
+      
+      if (existingUser && !existingUser.email_confirmed_at) {
+        throw new Error("Please check your email and click the confirmation link before signing in.");
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
-      if (error) {
-        if (error.message.includes("Email not confirmed")) {
-          throw new Error("Please check your email and click the confirmation link before signing in.");
-        }
-        throw error;
-      }
+      if (error) throw error;
 
       if (data.user) {
         // Fetch user profile to get user type
-        const { data: profileData } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('user_type')
           .eq('id', data.user.id)
           .single();
+
+        if (profileError) {
+          throw new Error("Could not fetch user profile. Please try again.");
+        }
 
         if (profileData?.user_type) {
           setAuth(data.user.id, profileData.user_type as 'staff' | 'customer');
@@ -54,13 +65,23 @@ const AuthPage = () => {
             description: "Successfully logged in!",
           });
         } else {
-          throw new Error("User profile not found");
+          throw new Error("User profile not found. Please contact support.");
         }
       }
     } catch (error: any) {
+      let errorMessage = "An error occurred during login. Please try again.";
+      
+      if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "Incorrect email or password. Please try again.";
+      } else if (error.message.includes("Email not confirmed")) {
+        errorMessage = "Please check your email and click the confirmation link before signing in.";
+      } else if (error.message.includes("No account found")) {
+        errorMessage = error.message;
+      }
+
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
       console.error("Login error:", error);
@@ -74,6 +95,13 @@ const AuthPage = () => {
     setLoading(true);
     
     try {
+      // Check if user already exists
+      const { data: existingUser } = await supabase.auth.admin.getUserByEmail(email);
+      
+      if (existingUser) {
+        throw new Error("An account with this email already exists. Please log in instead.");
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -85,7 +113,6 @@ const AuthPage = () => {
       });
 
       if (error) {
-        // Check if it's a rate limit error
         if (error.status === 429) {
           throw new Error("Please wait a minute before trying to sign up again.");
         }
