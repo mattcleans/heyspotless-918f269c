@@ -15,6 +15,7 @@ const AuthPage = () => {
   const [userType, setUserType] = useState<'customer' | 'staff' | 'admin'>('customer');
   const [loading, setLoading] = useState(false);
   const [showVerifyAlert, setShowVerifyAlert] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const setAuth = useAuthStore((state) => state.setAuth);
@@ -27,6 +28,7 @@ const AuthPage = () => {
     
     try {
       console.log("Starting login process...");
+      console.log("Remember me:", rememberMe);
       
       if (!email || !password) {
         throw new Error("Please enter both email and password");
@@ -37,6 +39,9 @@ const AuthPage = () => {
         authResponse = await supabase.auth.signInWithPassword({
           email,
           password,
+          options: {
+            persistSession: rememberMe
+          }
         });
         console.log("Auth response received:", authResponse);
       } catch (signInError: any) {
@@ -186,6 +191,8 @@ const AuthPage = () => {
             onEmailChange={(e) => setEmail(e.target.value)}
             onPasswordChange={(e) => setPassword(e.target.value)}
             onSubmit={handleLogin}
+            rememberMe={rememberMe}
+            onRememberMeChange={setRememberMe}
           />
         </TabsContent>
 
