@@ -1,7 +1,13 @@
 
 import React from "react";
 
-const BookingHeader = () => {
+type BookingStep = "date" | "time" | "address" | "confirmation";
+
+interface BookingHeaderProps {
+  currentStep: BookingStep;
+}
+
+const BookingHeader = ({ currentStep }: BookingHeaderProps) => {
   return (
     <div className="text-center mb-8">
       <div className="flex items-center justify-center mb-2">
