@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LogIn, UserPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuthStore } from "@/App";
 
 const AuthPage = () => {
   const [email, setEmail] = useState("");
@@ -15,32 +16,51 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        // Check if it's an email confirmation error
         if (error.message.includes("Email not confirmed")) {
           throw new Error("Please check your email and click the confirmation link before signing in.");
         }
         throw error;
       }
 
-      navigate("/");
+      if (data.user) {
+        // Fetch user profile to get user type
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('user_type')
+          .eq('id', data.user.id)
+          .single();
+
+        if (profileData?.user_type) {
+          setAuth(data.user.id, profileData.user_type as 'staff' | 'customer');
+          navigate("/", { replace: true });
+          toast({
+            title: "Success",
+            description: "Successfully logged in!",
+          });
+        } else {
+          throw new Error("User profile not found");
+        }
+      }
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
         variant: "destructive",
       });
+      console.error("Login error:", error);
     } finally {
       setLoading(false);
     }
@@ -74,6 +94,7 @@ const AuthPage = () => {
         description: error.message,
         variant: "destructive",
       });
+      console.error("Signup error:", error);
     } finally {
       setLoading(false);
     }
@@ -82,6 +103,13 @@ const AuthPage = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <Card className="w-full max-w-md p-8">
+        <div className="flex items-center justify-center mb-6">
+          <img 
+            src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
+            alt="Hey Spotless Logo" 
+            className="h-16 object-contain"
+          />
+        </div>
         <Tabs defaultValue="login" className="space-y-6">
           <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="login">Login</TabsTrigger>
