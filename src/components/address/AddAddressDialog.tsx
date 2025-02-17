@@ -66,9 +66,24 @@ export function AddAddressDialog({ open, onClose, onAddressAdded }: AddAddressDi
     }
   }, [autocomplete]);
 
+  const resetForm = () => {
+    setStreet("");
+    setCity("");
+    setState("");
+    setPostalCode("");
+    setIsPrimary(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!userId) return;
+    if (!userId || !street || !city || !state || !postalCode) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setSaving(true);
     try {
@@ -97,15 +112,10 @@ export function AddAddressDialog({ open, onClose, onAddressAdded }: AddAddressDi
       });
       
       onAddressAdded();
+      resetForm();
       onClose();
-      
-      // Reset form
-      setStreet("");
-      setCity("");
-      setState("");
-      setPostalCode("");
-      setIsPrimary(false);
     } catch (error: any) {
+      console.error('Error adding address:', error);
       toast({
         title: "Error",
         description: "Failed to add address. Please try again.",
@@ -187,7 +197,7 @@ export function AddAddressDialog({ open, onClose, onAddressAdded }: AddAddressDi
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={saving}>
+            <Button type="submit" disabled={saving || !street || !city || !state || !postalCode}>
               {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Save Address
             </Button>
