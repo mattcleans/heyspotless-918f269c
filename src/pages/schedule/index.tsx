@@ -86,7 +86,9 @@ const SchedulePage = () => {
 
     try {
       setIsSubmitting(true);
-      const { error } = await supabase
+      
+      // Create the booking
+      const { error: bookingError } = await supabase
         .from('bookings')
         .insert({
           user_id: userId,
@@ -98,14 +100,40 @@ const SchedulePage = () => {
           price: totalPrice
         });
 
-      if (error) throw error;
+      if (bookingError) throw bookingError;
+
+      // Get user profile data for notifications
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, phone, email')
+        .eq('id', userId)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Send confirmation notifications
+      const { error: notificationError } = await supabase.functions.invoke('send-booking-confirmation', {
+        body: {
+          email: profileData.email,
+          phone: profileData.phone,
+          date: date.toLocaleDateString(),
+          time,
+          address,
+          price: totalPrice,
+        },
+      });
+
+      if (notificationError) {
+        console.error('Notification error:', notificationError);
+        // Don't throw here - we want to show success even if notifications fail
+      }
 
       setCurrentStep("confirmation");
       toast({
         title: "Booking Successful",
-        description: "Your cleaning service has been scheduled"
+        description: "Your cleaning service has been scheduled. Check your email for confirmation details."
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Booking error:', error);
       toast({
         variant: "destructive",
