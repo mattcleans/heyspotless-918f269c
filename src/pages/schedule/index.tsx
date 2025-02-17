@@ -3,7 +3,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useLoadScript, Autocomplete } from "@react-google-maps/api";
@@ -30,11 +30,33 @@ const BookingPage = () => {
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  const [googleMapsApiKey, setGoogleMapsApiKey] = useState<string>("");
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchGoogleMapsKey = async () => {
+      const { data, error } = await supabase
+        .from('secrets')
+        .select('value')
+        .eq('name', 'GOOGLE_MAPS_API_KEY')
+        .single();
+      
+      if (error) {
+        console.error('Error fetching Google Maps API key:', error);
+        return;
+      }
+      
+      if (data) {
+        setGoogleMapsApiKey(data.value);
+      }
+    };
+
+    fetchGoogleMapsKey();
+  }, []);
+
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyALT9I9449_IzUWgWYFh5U0eIuWA2UBBQU",
+    googleMapsApiKey: googleMapsApiKey,
     libraries: libraries as ["places"],
   });
 
@@ -98,6 +120,7 @@ const BookingPage = () => {
     }
   };
 
+  if (!googleMapsApiKey) return <div>Loading...</div>;
   if (loadError) return <div>Error loading maps</div>;
   if (!isLoaded) return <div>Loading...</div>;
   if (!userId) return <div>Loading...</div>;
