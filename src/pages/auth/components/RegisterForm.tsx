@@ -8,11 +8,11 @@ import { UserPlus } from "lucide-react";
 interface RegisterFormProps {
   email: string;
   password: string;
-  userType: 'customer' | 'staff';
+  userType: 'customer' | 'staff' | 'admin';
   loading: boolean;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onUserTypeChange: (value: 'customer' | 'staff') => void;
+  onUserTypeChange: (value: 'customer' | 'staff' | 'admin') => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -53,7 +53,7 @@ export const RegisterForm = ({
         <RadioGroup 
           value={userType} 
           onValueChange={onUserTypeChange}
-          className="flex gap-4"
+          className="flex flex-wrap gap-4"
           disabled={loading}
         >
           <div className="flex items-center space-x-2">
@@ -63,6 +63,10 @@ export const RegisterForm = ({
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="staff" id="staff" />
             <Label htmlFor="staff">Staff Member</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="admin" id="admin" />
+            <Label htmlFor="admin">Admin</Label>
           </div>
         </RadioGroup>
       </div>

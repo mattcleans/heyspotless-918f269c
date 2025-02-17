@@ -12,7 +12,7 @@ import { RegisterForm } from "./components/RegisterForm";
 const AuthPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState<'customer' | 'staff'>('customer');
+  const [userType, setUserType] = useState<'customer' | 'staff' | 'admin'>('customer');
   const [loading, setLoading] = useState(false);
   const [showVerifyAlert, setShowVerifyAlert] = useState(false);
   const navigate = useNavigate();
@@ -51,7 +51,7 @@ const AuthPage = () => {
         }
 
         if (profileData?.user_type) {
-          setAuth(data.user.id, profileData.user_type as 'staff' | 'customer');
+          setAuth(data.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
           navigate("/", { replace: true });
           toast({
             title: "Success",
