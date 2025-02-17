@@ -49,7 +49,7 @@ const SchedulePage = () => {
       setTotalPrice(state.quoteDetails.total);
       setSelectedFrequency(state.quoteDetails.frequency);
       setServiceTypeName(state.quoteDetails.serviceTypeName);
-      setCurrentStep("address"); // Changed from "date" to "address"
+      setCurrentStep("address");
     }
   }, [location.state]);
 
@@ -170,7 +170,7 @@ const SchedulePage = () => {
                 notes={notes}
                 onAddressChange={setAddress}
                 onNotesChange={setNotes}
-                onBook={() => setCurrentStep(hasPaymentMethod ? "confirmation" : "payment")}
+                onBook={handleBook}
                 onLoad={setAutocomplete}
                 onPlaceChanged={handlePlaceSelect}
               />
@@ -183,7 +183,6 @@ const SchedulePage = () => {
               <Button
                 className="w-full"
                 onClick={() => {
-                  // This will be implemented when we add payment processing
                   setCurrentStep("confirmation");
                 }}
               >
