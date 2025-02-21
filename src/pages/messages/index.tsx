@@ -1,22 +1,20 @@
-
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
+import { useMessagesStore, type Contact } from "@/services/messages";
+import { useAuthStore } from "@/App";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { MessageSquare } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, Phone, Video, History, Search, Users, UserCheck } from "lucide-react";
-import { useMessagesStore, type Contact, type Message } from "@/services/messages";
 import { format } from "date-fns";
-import { useAuthStore } from "@/App";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 const MessagesPage = () => {
   const { contacts, messages, selectedContact, setSelectedContact, addMessage, filter, setFilter } = useMessagesStore();
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated, userId } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   // Create a default HQ contact for non-authenticated users
   const hqContact: Contact = {
@@ -28,11 +26,9 @@ const MessagesPage = () => {
   };
 
   // Set HQ as selected contact for non-authenticated users
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setSelectedContact(hqContact);
-    }
-  }, [isAuthenticated]);
+  if (!isAuthenticated && !selectedContact) {
+    setSelectedContact(hqContact);
+  }
 
   // Filter contacts based on search query and type
   const filteredContacts = isAuthenticated 
@@ -50,25 +46,14 @@ const MessagesPage = () => {
       (message.senderId === 'currentUser' && message.receiverId === selectedContact?.id)
   );
 
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [contactMessages]);
-
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedContact) return;
 
-    // Add message to local state
+    // Add message to local state - only include required properties
     addMessage({
       content: messageInput,
       senderId: 'currentUser',
       receiverId: selectedContact.id,
-      timestamp: new Date(),
-      id: Math.random().toString()
     });
 
     // If user is not authenticated and sending to HQ, store in Supabase
@@ -93,17 +78,12 @@ const MessagesPage = () => {
     setMessageInput("");
   };
 
-  const formatMessageTime = (date: Date) => {
-    return format(date, 'h:mm a');
-  };
-
   // For non-authenticated users, only show the chat area
   if (!isAuthenticated) {
     return (
       <div className="h-[calc(100vh-5rem)] p-6">
         <div className="h-full">
           <Card className="h-full flex flex-col">
-            {/* Chat Header */}
             <div className="p-4 border-b flex justify-between items-center">
               <div>
                 <h2 className="font-semibold text-[#1B365D]">Hey Spotless HQ</h2>
@@ -111,14 +91,13 @@ const MessagesPage = () => {
               </div>
             </div>
 
-            {/* Chat Messages */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
                 <div className="flex gap-2 items-start">
                   <div className="p-3 rounded-lg max-w-[80%] bg-[#0066B3]/10 text-[#1B365D]">
                     <p>Welcome to Hey Spotless! How can we help you today?</p>
                     <span className="text-xs mt-1 block text-[#1B365D]/60">
-                      {formatMessageTime(new Date())}
+                      {format(new Date(), 'h:mm a')}
                     </span>
                   </div>
                 </div>
@@ -140,16 +119,14 @@ const MessagesPage = () => {
                       <span className={`text-xs mt-1 block ${
                         message.senderId === 'currentUser' ? 'text-white/60' : 'text-[#1B365D]/60'
                       }`}>
-                        {formatMessageTime(message.timestamp)}
+                        {format(message.timestamp, 'h:mm a')}
                       </span>
                     </div>
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
               </div>
             </ScrollArea>
 
-            {/* Message Input */}
             <div className="p-4 border-t">
               <div className="flex gap-2">
                 <Input
@@ -308,12 +285,11 @@ const MessagesPage = () => {
                         <span className={`text-xs mt-1 block ${
                           message.senderId === 'currentUser' ? 'text-white/60' : 'text-[#1B365D]/60'
                         }`}>
-                          {formatMessageTime(message.timestamp)}
+                          {format(message.timestamp, 'h:mm a')}
                         </span>
                       </div>
                     </div>
                   ))}
-                  <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
 
