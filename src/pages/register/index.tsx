@@ -1,40 +1,40 @@
 
-import { AuthCard } from "./components/AuthCard";
-import { LoginForm } from "./components/LoginForm";
-import { useAuthentication } from "./hooks/useAuthentication";
+import { AuthCard } from "../auth/components/AuthCard";
+import { RegisterForm } from "../auth/components/RegisterForm";
+import { useAuthentication } from "../auth/hooks/useAuthentication";
 import { Link } from "react-router-dom";
 
-const AuthPage = () => {
+const RegisterPage = () => {
   const {
     email,
     setEmail,
     password,
     setPassword,
+    userType,
+    setUserType,
     loading,
     showVerifyAlert,
-    rememberMe,
-    setRememberMe,
-    handleLogin,
+    handleSignUp
   } = useAuthentication();
 
   return (
     <AuthCard showVerifyAlert={showVerifyAlert}>
       <div className="space-y-6">
-        <LoginForm
+        <RegisterForm
           email={email}
           password={password}
+          userType={userType}
           loading={loading}
           onEmailChange={(e) => setEmail(e.target.value)}
           onPasswordChange={(e) => setPassword(e.target.value)}
-          onSubmit={handleLogin}
-          rememberMe={rememberMe}
-          onRememberMeChange={setRememberMe}
+          onUserTypeChange={setUserType}
+          onSubmit={handleSignUp}
         />
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{" "}
-            <Link to="/register" className="text-primary hover:underline">
-              Create Account
+            Already have an account?{" "}
+            <Link to="/auth" className="text-primary hover:underline">
+              Sign In
             </Link>
           </p>
         </div>
@@ -43,4 +43,4 @@ const AuthPage = () => {
   );
 };
 
-export default AuthPage;
+export default RegisterPage;

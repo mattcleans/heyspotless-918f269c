@@ -10,6 +10,7 @@ import SchedulePage from "@/pages/schedule";
 import QuotesPage from "@/pages/quotes";
 import MessagesPage from "@/pages/messages";
 import AuthPage from "@/pages/auth";
+import RegisterPage from "@/pages/register";
 import EditProfilePage from "@/pages/profile/EditProfilePage";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -155,12 +156,13 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/register" element={<RegisterPage />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<IndexPage />} />
           <Route path="clients" element={renderProtectedRoute(<ClientsPage />)} />
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="quotes" element={<QuotesPage />} />
-          <Route path="messages" element={<MessagesPage />} /> {/* Removed protection */}
+          <Route path="messages" element={<MessagesPage />} />
           <Route 
             path="profile/edit" 
             element={isAuthenticated ? <EditProfilePage /> : <AuthPage />} 
