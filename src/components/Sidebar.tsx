@@ -1,9 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Home, Users, Calendar, DollarSign, MessageSquare, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/App";
+import { supabase } from "@/integrations/supabase/client";
 
 const staffMenuItems = [
   {
@@ -58,10 +59,57 @@ const customerMenuItems = [
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
   const userType = useAuthStore((state) => state.userType);
+  const userId = useAuthStore((state) => state.userId);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   const menuItems = userType === 'staff' ? staffMenuItems : customerMenuItems;
+
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      try {
+        if (!isAuthenticated) {
+          const { count } = await supabase
+            .from('support_messages')
+            .select('*', { count: 'exact', head: true })
+            .eq('status', 'unread')
+            .eq('sender_type', 'guest');
+
+          setUnreadCount(count || 0);
+        } else if (userId) {
+          // For authenticated users (implement this part after adding messages table)
+          // You'll need to count unread messages for the authenticated user
+          setUnreadCount(0); // Placeholder for now
+        }
+      } catch (error) {
+        console.error('Error fetching unread messages:', error);
+      }
+    };
+
+    fetchUnreadMessages();
+
+    // Set up real-time subscription for updates
+    const subscription = supabase
+      .channel('unread-messages')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'support_messages'
+        },
+        () => {
+          fetchUnreadMessages();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [isAuthenticated, userId]);
 
   return (
     <>
@@ -96,18 +144,25 @@ const Sidebar = () => {
             {menuItems.map(item => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
+              const isMessages = item.path === '/messages';
+              
               return (
                 <Link
                   key={item.path}
                   to={item.path}
                   className={cn(
-                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors",
+                    "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors relative",
                     "hover:bg-[#A8E6EF]/10 hover:text-[#0066B3]",
                     isActive ? "bg-[#A8E6EF]/10 text-[#0066B3]" : "text-[#1B365D]"
                   )}
                 >
                   <Icon className="w-5 h-5 mr-3" />
                   {item.label}
+                  {isMessages && unreadCount > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
+                      {unreadCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
