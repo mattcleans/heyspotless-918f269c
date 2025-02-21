@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/App";
 import { Loader2 } from "lucide-react";
 import { Autocomplete } from "@react-google-maps/api";
+import { MapsLoader } from "@/components/ui/maps-loader";
 
 interface AddAddressDialogProps {
   open: boolean;
@@ -30,11 +31,13 @@ export function AddAddressDialog({ open, onClose, onAddressAdded }: AddAddressDi
   const userId = useAuthStore((state) => state.userId);
 
   const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
+    console.log("Autocomplete loaded");
     setAutocomplete(autocomplete);
   };
 
   const onPlaceChanged = useCallback(() => {
     if (autocomplete) {
+      console.log("Place changed");
       const place = autocomplete.getPlace();
       if (place.address_components) {
         let streetNumber = "";
@@ -90,12 +93,12 @@ export function AddAddressDialog({ open, onClose, onAddressAdded }: AddAddressDi
       // If this is set as primary, update all other addresses to non-primary
       if (isPrimary) {
         await supabase
-          .from("addresses")
+          .from('addresses')
           .update({ is_primary: false })
-          .eq("user_id", userId);
+          .eq('user_id', userId);
       }
 
-      const { error } = await supabase.from("addresses").insert({
+      const { error } = await supabase.from('addresses').insert({
         street,
         city,
         state,
@@ -132,77 +135,79 @@ export function AddAddressDialog({ open, onClose, onAddressAdded }: AddAddressDi
         <DialogHeader>
           <DialogTitle>Add New Address</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="street">Street Address</Label>
-            <Autocomplete
-              onLoad={onLoad}
-              onPlaceChanged={onPlaceChanged}
-              restrictions={{ country: "us" }}
-            >
-              <Input
-                id="street"
-                value={street}
-                onChange={(e) => setStreet(e.target.value)}
-                placeholder="Enter your street address"
-                required
-              />
-            </Autocomplete>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
+        <MapsLoader>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
+              <Label htmlFor="street">Street Address</Label>
+              <Autocomplete
+                onLoad={onLoad}
+                onPlaceChanged={onPlaceChanged}
+                restrictions={{ country: "us" }}
+              >
+                <Input
+                  id="street"
+                  value={street}
+                  onChange={(e) => setStreet(e.target.value)}
+                  placeholder="Enter your street address"
+                  required
+                />
+              </Autocomplete>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="City"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="state">State</Label>
+                <Input
+                  id="state"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  placeholder="State"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="postalCode">ZIP Code</Label>
               <Input
-                id="city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="City"
+                id="postalCode"
+                value={postalCode}
+                onChange={(e) => setPostalCode(e.target.value)}
+                placeholder="ZIP Code"
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
-                placeholder="State"
-                required
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isPrimary"
+                checked={isPrimary}
+                onCheckedChange={(checked) => setIsPrimary(checked as boolean)}
               />
+              <Label htmlFor="isPrimary">Set as primary address</Label>
             </div>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="postalCode">ZIP Code</Label>
-            <Input
-              id="postalCode"
-              value={postalCode}
-              onChange={(e) => setPostalCode(e.target.value)}
-              placeholder="ZIP Code"
-              required
-            />
-          </div>
-
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="isPrimary"
-              checked={isPrimary}
-              onCheckedChange={(checked) => setIsPrimary(checked as boolean)}
-            />
-            <Label htmlFor="isPrimary">Set as primary address</Label>
-          </div>
-
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={saving || !street || !city || !state || !postalCode}>
-              {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Save Address
-            </Button>
-          </div>
-        </form>
+            <div className="flex justify-end space-x-2">
+              <Button type="button" variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={saving || !street || !city || !state || !postalCode}>
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Address
+              </Button>
+            </div>
+          </form>
+        </MapsLoader>
       </DialogContent>
     </Dialog>
   );
