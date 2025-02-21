@@ -18,8 +18,11 @@ export const usePasswordReset = () => {
     setLoading(true);
     
     try {
+      // Construct the redirect URL with the correct hash format
+      const redirectTo = `${window.location.origin}/reset-password#`;
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo,
       });
 
       if (error) {
