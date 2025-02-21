@@ -27,11 +27,14 @@ export const LoginForm = ({
       <div className="space-y-2">
         <Input 
           type="email" 
-          placeholder="Email" 
+          placeholder="name@example.com" 
           value={email} 
           onChange={onEmailChange} 
           required 
-          disabled={loading} 
+          disabled={loading}
+          pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+          className="w-full"
+          autoComplete="email"
         />
       </div>
       <div className="flex items-center space-x-2">

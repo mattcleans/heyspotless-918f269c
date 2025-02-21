@@ -42,6 +42,11 @@ export const useLogin = () => {
     }
   };
 
+  const validateEmail = (email: string) => {
+    const re = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email.toLowerCase());
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -51,23 +56,24 @@ export const useLogin = () => {
     }
     
     console.log("Starting login process");
+    console.log("Email value:", email);
+
+    if (!email || !validateEmail(email)) {
+      console.log("Invalid email:", email);
+      toast({
+        title: "Error",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     safeSetLoading(true);
     
     try {
-      if (!email) {
-        console.log("Missing email");
-        toast({
-          title: "Error",
-          description: "Please enter your email address",
-          variant: "destructive",
-        });
-        safeSetLoading(false);
-        return;
-      }
-
-      console.log("Sending magic link");
+      console.log("Sending magic link to:", email);
       const { error } = await supabase.auth.signInWithOtp({
-        email,
+        email: email.trim(),
         options: {
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -84,6 +90,8 @@ export const useLogin = () => {
         return;
       }
 
+      setShowVerifyAlert(true);
+      
       if (mounted.current) {
         toast({
           title: "Check your email",
