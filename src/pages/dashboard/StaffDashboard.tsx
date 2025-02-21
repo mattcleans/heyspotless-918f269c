@@ -53,7 +53,17 @@ const StaffDashboard = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('bookings')
-        .select('*, cleaner:cleaner_profiles(*)')
+        .select(`
+          *,
+          cleaner:cleaner_profiles(
+            id,
+            hourly_rate,
+            bio,
+            profile:profiles(
+              user_type
+            )
+          )
+        `)
         .eq('cleaner_id', userId)
         .eq('status', 'confirmed')
         .gte('date', nextWeekStart.toISOString())
@@ -61,7 +71,15 @@ const StaffDashboard = () => {
         .order('date', { ascending: true });
 
       if (error) throw error;
-      return data;
+      
+      // Transform data to match expected type
+      return data?.map(booking => ({
+        ...booking,
+        cleaner: booking.cleaner ? {
+          ...booking.cleaner,
+          profiles: booking.cleaner.profile
+        }
+      }));
     }
   });
 

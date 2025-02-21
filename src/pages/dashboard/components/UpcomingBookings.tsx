@@ -6,14 +6,18 @@ import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
 
+type CleanerProfile = Database['public']['Tables']['cleaner_profiles']['Row'] & {
+  profile: {
+    user_type: string;
+  };
+};
+
 type Booking = Database['public']['Tables']['bookings']['Row'] & {
-  cleaner: {
-    hourly_rate: number;
-    bio: string | null;
+  cleaner: (Omit<CleanerProfile, 'profile'> & {
     profiles: {
       user_type: string;
     };
-  } | null;
+  }) | null;
 };
 
 interface UpcomingBookingsProps {
