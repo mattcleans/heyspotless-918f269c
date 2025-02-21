@@ -40,11 +40,6 @@ export const ServiceTypeSelector = ({
             <p className="text-sm text-[#1B365D]/60 mt-1">
               {serviceType.description}
             </p>
-            <p className="text-sm font-medium text-[#0066B3] mt-2">
-              {serviceType.price_multiplier > 1
-                ? `${(serviceType.price_multiplier * 100 - 100).toFixed(0)}% increase`
-                : "Base price"}
-            </p>
           </div>
         ))}
       </div>

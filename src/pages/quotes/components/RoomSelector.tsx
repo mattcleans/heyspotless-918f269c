@@ -7,17 +7,32 @@ interface RoomCounts {
   [key: string]: number;
 }
 
+interface ServiceType {
+  id: string;
+  type: 'standard' | 'deep' | 'move';
+  name: string;
+  price_multiplier: number;
+  description: string;
+}
+
 interface RoomSelectorProps {
   rooms: { [key: string]: number };
   roomCounts: RoomCounts;
   onUpdateRoomCount: (room: string, increment: boolean) => void;
+  selectedServiceType: ServiceType | null;
 }
 
 export const RoomSelector = ({
   rooms,
   roomCounts,
   onUpdateRoomCount,
+  selectedServiceType,
 }: RoomSelectorProps) => {
+  const getAdjustedPrice = (basePrice: number) => {
+    const multiplier = selectedServiceType?.price_multiplier || 1;
+    return basePrice * multiplier;
+  };
+
   return (
     <Card className="p-6">
       <h2 className="text-lg font-semibold text-[#1B365D] mb-4">
@@ -32,7 +47,7 @@ export const RoomSelector = ({
             <div>
               <p className="font-medium text-[#1B365D]">{room}</p>
               <p className="text-sm text-[#1B365D]/60">
-                ${price.toFixed(2)} per room
+                ${getAdjustedPrice(price).toFixed(2)} per room
               </p>
             </div>
             <div className="flex items-center space-x-3">
