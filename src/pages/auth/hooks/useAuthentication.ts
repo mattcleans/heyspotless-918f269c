@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,40 +16,47 @@ export const useAuthentication = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const mounted = useRef(true);
+
+  // Safe state setter that only updates if component is mounted
+  const safeSetLoading = (value: boolean) => {
+    if (mounted.current) {
+      setLoading(value);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (loading) {
-      console.log("Login already in progress, preventing duplicate submission");
+      console.log("Login already in progress");
       return;
     }
     
-    console.log("Starting login process...");
-    setLoading(true);
+    console.log("Starting login process");
+    safeSetLoading(true);
     
     try {
-      // Basic validation
       if (!email || !password) {
-        console.log("Missing email or password");
+        console.log("Missing credentials");
         toast({
           title: "Error",
           description: "Please enter both email and password",
           variant: "destructive",
         });
-        setLoading(false);
+        safeSetLoading(false);
         return;
       }
 
-      console.log("Attempting to sign in with Supabase...");
-      const { data: { user, session }, error } = await supabase.auth.signInWithPassword({
+      console.log("Authenticating with Supabase");
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
 
-      if (error) {
-        console.error("Login error:", error);
-        if (error.message.includes("Email not confirmed")) {
+      if (authError) {
+        console.error("Auth error:", authError);
+        if (authError.message.includes("Email not confirmed")) {
           setShowVerifyAlert(true);
           toast({
             title: "Verification Required",
@@ -60,79 +66,67 @@ export const useAuthentication = () => {
         } else {
           toast({
             title: "Login Failed",
-            description: error.message,
+            description: authError.message,
             variant: "destructive",
           });
         }
-        setLoading(false);
+        safeSetLoading(false);
         return;
       }
 
-      if (!user) {
+      if (!authData.user) {
         console.error("No user data received");
         toast({
           title: "Error",
-          description: "No user data received",
+          description: "Login failed - no user data received",
           variant: "destructive",
         });
-        setLoading(false);
+        safeSetLoading(false);
         return;
       }
 
-      console.log("Successfully signed in, fetching user profile...");
+      console.log("Fetching user profile");
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('user_type')
-        .eq('id', user.id)
-        .maybeSingle();
+        .eq('id', authData.user.id)
+        .single();
 
-      if (profileError) {
-        console.error("Profile fetch error:", profileError);
+      if (profileError || !profile) {
+        console.error("Profile error:", profileError);
         toast({
           title: "Error",
           description: "Failed to load user profile",
           variant: "destructive",
         });
-        setLoading(false);
+        safeSetLoading(false);
         return;
       }
 
-      if (!profile) {
-        console.error("No profile found for user:", user.id);
-        toast({
-          title: "Error",
-          description: "No user profile found",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
+      console.log("Setting auth state");
+      setAuth(authData.user.id, profile.user_type as 'staff' | 'customer' | 'admin');
 
-      console.log("Setting auth state with:", {
-        userId: user.id,
-        userType: profile.user_type
-      });
-
-      // Update auth state
-      setAuth(user.id, profile.user_type as 'staff' | 'customer' | 'admin');
-
-      // Show success message
       toast({
         title: "Welcome back!",
         description: "Successfully logged in",
       });
 
-      console.log("Navigating to homepage...");
-      navigate("/", { replace: true });
+      // Ensure we're still mounted before navigation
+      if (mounted.current) {
+        console.log("Navigating to home");
+        navigate("/", { replace: true });
+      }
     } catch (error) {
-      console.error("Unexpected error during login:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      console.error("Unexpected error:", error);
+      if (mounted.current) {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      }
     } finally {
-      setLoading(false);
+      safeSetLoading(false);
     }
   };
 
@@ -197,6 +191,11 @@ export const useAuthentication = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Cleanup on unmount
+  return () => {
+    mounted.current = false;
   };
 
   return {
