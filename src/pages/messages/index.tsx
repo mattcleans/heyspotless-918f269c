@@ -1,9 +1,18 @@
+
 import { useState } from "react";
 import { useMessagesStore, type Contact } from "@/services/messages";
 import { useAuthStore } from "@/App";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { MessageSquare } from "lucide-react";
+import { 
+  MessageSquare, 
+  Search, 
+  Users, 
+  UserCheck,
+  Phone,
+  Video,
+  History as HistoryIcon
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -240,7 +249,6 @@ const MessagesPage = () => {
         <Card className="md:col-span-3 h-full flex flex-col">
           {selectedContact ? (
             <>
-              {/* Chat Header */}
               <div className="p-4 border-b flex justify-between items-center">
                 <div>
                   <h2 className="font-semibold text-[#1B365D]">
@@ -259,12 +267,11 @@ const MessagesPage = () => {
                     <Video className="h-4 w-4" />
                   </Button>
                   <Button variant="outline" size="icon">
-                    <History className="h-4 w-4" />
+                    <HistoryIcon className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
 
-              {/* Chat Messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-4">
                   {contactMessages.map((message) => (
@@ -293,7 +300,6 @@ const MessagesPage = () => {
                 </div>
               </ScrollArea>
 
-              {/* Message Input */}
               <div className="p-4 border-t">
                 <div className="flex gap-2">
                   <Input
