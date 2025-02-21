@@ -57,6 +57,8 @@ export type Database = {
           created_at: string
           date: string
           duration: number | null
+          guest_email: string | null
+          guest_phone: string | null
           id: string
           notes: string | null
           price: number | null
@@ -70,6 +72,8 @@ export type Database = {
           created_at?: string
           date: string
           duration?: number | null
+          guest_email?: string | null
+          guest_phone?: string | null
           id?: string
           notes?: string | null
           price?: number | null
@@ -83,6 +87,8 @@ export type Database = {
           created_at?: string
           date?: string
           duration?: number | null
+          guest_email?: string | null
+          guest_phone?: string | null
           id?: string
           notes?: string | null
           price?: number | null
@@ -213,6 +219,13 @@ export type Database = {
             foreignKeyName: "earnings_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
+            referencedRelation: "all_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "earnings_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
@@ -329,6 +342,13 @@ export type Database = {
             foreignKeyName: "reviews_booking_id_fkey"
             columns: ["booking_id"]
             isOneToOne: false
+            referencedRelation: "all_bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
             referencedRelation: "bookings"
             referencedColumns: ["id"]
           },
@@ -392,7 +412,34 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      all_bookings: {
+        Row: {
+          address: string | null
+          cleaner_id: string | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string | null
+          date: string | null
+          duration: number | null
+          guest_email: string | null
+          guest_phone: string | null
+          id: string | null
+          notes: string | null
+          price: number | null
+          status: string | null
+          time: string | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       get_secret: {

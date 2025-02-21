@@ -10,6 +10,7 @@ import BookingHeader, { BookingStep } from "./components/BookingHeader";
 import DateSelection from "./components/DateSelection";
 import TimeSelection from "./components/TimeSelection";
 import AddressAndNotes from "./components/AddressAndNotes";
+import GuestInformation from "./components/GuestInformation";
 import BookingConfirmation from "./components/BookingConfirmation";
 import { Button } from "@/components/ui/button";
 
@@ -26,6 +27,11 @@ interface LocationState {
   time?: string;
 }
 
+interface GuestInfo {
+  email: string;
+  phone: string;
+}
+
 const SchedulePage = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,11 +42,11 @@ const SchedulePage = () => {
   const [time, setTime] = useState<string>();
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [guestInfo, setGuestInfo] = useState<GuestInfo>({ email: "", phone: "" });
   const [totalPrice, setTotalPrice] = useState(0);
   const [selectedFrequency, setSelectedFrequency] = useState("one-time");
   const [autocomplete, setAutocomplete] = useState<google.maps.places.Autocomplete | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasPaymentMethod, setHasPaymentMethod] = useState(false);
   const [serviceTypeName, setServiceTypeName] = useState("");
 
   useEffect(() => {
@@ -75,15 +81,24 @@ const SchedulePage = () => {
   const handleQuoteComplete = (price: number, frequency: string) => {
     setTotalPrice(price);
     setSelectedFrequency(frequency);
-    setCurrentStep("address");
+    setCurrentStep(userId ? "address" : "guest-info");
   };
 
   const handleBook = async () => {
-    if (!userId || !date || !time || !address) {
+    if (!date || !time || !address) {
       toast({
         variant: "destructive",
         title: "Missing Information",
         description: "Please fill in all required fields"
+      });
+      return;
+    }
+
+    if (!userId && (!guestInfo.email || !guestInfo.phone)) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please provide your contact information"
       });
       return;
     }
@@ -94,7 +109,7 @@ const SchedulePage = () => {
       const { error: bookingError } = await supabase
         .from('bookings')
         .insert({
-          user_id: userId,
+          user_id: userId || null,
           date: date.toISOString().split('T')[0],
           time,
           address,
@@ -102,7 +117,9 @@ const SchedulePage = () => {
           status: 'pending',
           price: totalPrice,
           frequency: selectedFrequency,
-          service_type: serviceTypeName
+          service_type: serviceTypeName,
+          guest_email: !userId ? guestInfo.email : null,
+          guest_phone: !userId ? guestInfo.phone : null
         });
 
       if (bookingError) throw bookingError;
@@ -153,14 +170,24 @@ const SchedulePage = () => {
               >
                 Build New Quote
               </Button>
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setCurrentStep("address")}
-              >
-                Rebook Previous Service
-              </Button>
+              {userId && (
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setCurrentStep("address")}
+                >
+                  Rebook Previous Service
+                </Button>
+              )}
             </div>
+          );
+        case "guest-info":
+          return (
+            <GuestInformation
+              guestInfo={guestInfo}
+              onGuestInfoChange={setGuestInfo}
+              onNext={() => setCurrentStep("address")}
+            />
           );
         case "address":
           return (
@@ -175,20 +202,6 @@ const SchedulePage = () => {
                 onPlaceChanged={handlePlaceSelect}
               />
             </MapsLoader>
-          );
-        case "payment":
-          return (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold text-[#0066B3] text-center">Add Payment Method</h2>
-              <Button
-                className="w-full"
-                onClick={() => {
-                  setCurrentStep("confirmation");
-                }}
-              >
-                Add Payment Method
-              </Button>
-            </div>
           );
         case "confirmation":
           return (

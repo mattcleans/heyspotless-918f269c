@@ -1,6 +1,5 @@
-
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { create } from "zustand";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
@@ -35,6 +34,7 @@ function isValidUserType(type: string | null): type is 'staff' | 'customer' | 'a
 function App() {
   const setAuth = useAuthStore((state) => state.setAuth);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const userType = useAuthStore((state) => state.userType);
 
   useEffect(() => {
     // Initial session check
@@ -143,35 +143,27 @@ function App() {
     };
   }, [setAuth]);
 
+  const renderProtectedRoute = (element: JSX.Element) => {
+    if (userType === 'staff' || userType === 'admin') {
+      return element;
+    }
+    return <AuthPage />;
+  };
+
   return (
     <BrowserRouter>
       <Routes>
-        <Route 
-          path="/auth" 
-          element={
-            isAuthenticated ? (
-              <Navigate to="/" replace />
-            ) : (
-              <AuthPage />
-            )
-          } 
-        />
-        <Route
-          path="/"
-          element={
-            isAuthenticated ? (
-              <Layout />
-            ) : (
-              <Navigate to="/auth" replace />
-            )
-          }
-        >
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/" element={<Layout />}>
           <Route index element={<IndexPage />} />
-          <Route path="clients" element={<ClientsPage />} />
+          <Route path="clients" element={renderProtectedRoute(<ClientsPage />)} />
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="quotes" element={<QuotesPage />} />
-          <Route path="messages" element={<MessagesPage />} />
-          <Route path="profile/edit" element={<EditProfilePage />} />
+          <Route path="messages" element={renderProtectedRoute(<MessagesPage />)} />
+          <Route 
+            path="profile/edit" 
+            element={isAuthenticated ? <EditProfilePage /> : <AuthPage />} 
+          />
         </Route>
       </Routes>
       <Toaster />
