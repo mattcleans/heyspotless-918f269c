@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FrequencySelector } from "./components/FrequencySelector";
@@ -62,13 +63,37 @@ const extraServices: ExtraService[] = [
   { name: "Closet/Pantry Organization", price: 110.00 },
 ];
 
+const defaultServiceTypes: ServiceType[] = [
+  {
+    id: "standard",
+    type: "standard",
+    name: "Standard Clean",
+    price_multiplier: 1,
+    description: "Regular cleaning service for home maintenance"
+  },
+  {
+    id: "deep",
+    type: "deep",
+    name: "Deep Clean",
+    price_multiplier: 1.5,
+    description: "Thorough cleaning including hard to reach areas"
+  },
+  {
+    id: "move",
+    type: "move",
+    name: "Move In/Out Clean",
+    price_multiplier: 2,
+    description: "Detailed cleaning for moving situations"
+  }
+];
+
 const QuotePage = () => {
   const navigate = useNavigate();
   const [selectedFrequency, setSelectedFrequency] = useState<string>("one-time");
   const [roomCounts, setRoomCounts] = useState<RoomCounts>({});
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
   const [total, setTotal] = useState<number>(60);
-  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
+  const [serviceTypes, setServiceTypes] = useState<ServiceType[]>(defaultServiceTypes);
   const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | null>(null);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
 
@@ -81,12 +106,16 @@ const QuotePage = () => {
 
       if (error) {
         toast.error('Error fetching service types');
+        setServiceTypes(defaultServiceTypes);  // Use default types if fetch fails
         return;
       }
 
-      setServiceTypes(data);
-      if (data.length > 0) {
+      if (data && data.length > 0) {
+        setServiceTypes(data);
         setSelectedServiceType(data[0]); // Set standard clean as default
+      } else {
+        setServiceTypes(defaultServiceTypes);
+        setSelectedServiceType(defaultServiceTypes[0]);
       }
     };
 
