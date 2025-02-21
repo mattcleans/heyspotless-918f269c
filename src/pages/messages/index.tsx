@@ -7,19 +7,41 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageSquare, Phone, Video, History, Search, Users, UserCheck } from "lucide-react";
 import { useMessagesStore, type Contact, type Message } from "@/services/messages";
 import { format } from "date-fns";
+import { useAuthStore } from "@/App";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const MessagesPage = () => {
   const { contacts, messages, selectedContact, setSelectedContact, addMessage, filter, setFilter } = useMessagesStore();
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { isAuthenticated, userId } = useAuthStore();
+
+  // Create a default HQ contact for non-authenticated users
+  const hqContact: Contact = {
+    id: 'hq',
+    name: 'Hey Spotless HQ',
+    status: 'online',
+    type: 'employee',
+    role: 'Customer Support'
+  };
+
+  // Set HQ as selected contact for non-authenticated users
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setSelectedContact(hqContact);
+    }
+  }, [isAuthenticated]);
 
   // Filter contacts based on search query and type
-  const filteredContacts = contacts.filter((contact) => {
-    const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === 'all' || contact.type === filter;
-    return matchesSearch && matchesFilter;
-  });
+  const filteredContacts = isAuthenticated 
+    ? contacts.filter((contact) => {
+        const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesFilter = filter === 'all' || contact.type === filter;
+        return matchesSearch && matchesFilter;
+      })
+    : [hqContact];
 
   // Get messages for selected contact
   const contactMessages = messages.filter(
@@ -37,14 +59,34 @@ const MessagesPage = () => {
     scrollToBottom();
   }, [contactMessages]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedContact) return;
 
+    // Add message to local state
     addMessage({
       content: messageInput,
       senderId: 'currentUser',
       receiverId: selectedContact.id,
     });
+
+    // If user is not authenticated and sending to HQ, store in Supabase
+    if (!isAuthenticated && selectedContact.id === 'hq') {
+      try {
+        const { error } = await supabase
+          .from('support_messages')
+          .insert({
+            content: messageInput,
+            sender_type: 'guest',
+            status: 'unread'
+          });
+
+        if (error) throw error;
+      } catch (error) {
+        console.error('Error sending message:', error);
+        toast.error("Couldn't send message. Please try again.");
+      }
+    }
+
     setMessageInput("");
   };
 
@@ -52,6 +94,88 @@ const MessagesPage = () => {
     return format(date, 'h:mm a');
   };
 
+  // For non-authenticated users, only show the chat area
+  if (!isAuthenticated) {
+    return (
+      <div className="h-[calc(100vh-5rem)] p-6">
+        <div className="h-full">
+          <Card className="h-full flex flex-col">
+            {/* Chat Header */}
+            <div className="p-4 border-b flex justify-between items-center">
+              <div>
+                <h2 className="font-semibold text-[#1B365D]">Hey Spotless HQ</h2>
+                <p className="text-sm text-[#1B365D]/60">Customer Support</p>
+              </div>
+            </div>
+
+            {/* Chat Messages */}
+            <ScrollArea className="flex-1 p-4">
+              <div className="space-y-4">
+                <div className="flex gap-2 items-start">
+                  <div className="p-3 rounded-lg max-w-[80%] bg-[#0066B3]/10 text-[#1B365D]">
+                    <p>Welcome to Hey Spotless! How can we help you today?</p>
+                    <span className="text-xs mt-1 block text-[#1B365D]/60">
+                      {formatMessageTime(new Date())}
+                    </span>
+                  </div>
+                </div>
+                {contactMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`flex gap-2 items-start ${
+                      message.senderId === 'currentUser' ? 'justify-end' : ''
+                    }`}
+                  >
+                    <div
+                      className={`p-3 rounded-lg max-w-[80%] ${
+                        message.senderId === 'currentUser'
+                          ? 'bg-[#0066B3] text-white'
+                          : 'bg-[#0066B3]/10 text-[#1B365D]'
+                      }`}
+                    >
+                      <p>{message.content}</p>
+                      <span className={`text-xs mt-1 block ${
+                        message.senderId === 'currentUser' ? 'text-white/60' : 'text-[#1B365D]/60'
+                      }`}>
+                        {formatMessageTime(message.timestamp)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+
+            {/* Message Input */}
+            <div className="p-4 border-t">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Type a message..."
+                  className="flex-1"
+                  value={messageInput}
+                  onChange={(e) => setMessageInput(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSendMessage();
+                    }
+                  }}
+                />
+                <Button
+                  className="bg-[#0066B3]"
+                  onClick={handleSendMessage}
+                  disabled={!messageInput.trim()}
+                >
+                  <MessageSquare className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
+  // Return original messages interface for authenticated users
   return (
     <div className="h-[calc(100vh-5rem)] p-6">
       <div className="h-full grid grid-cols-1 md:grid-cols-4 gap-6">
