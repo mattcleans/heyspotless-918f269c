@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +7,9 @@ import { useAuthStore } from "@/App";
 export const useAuthentication = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [userType, setUserType] = useState<'customer' | 'staff' | 'admin'>('customer');
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [showVerifyAlert, setShowVerifyAlert] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
@@ -104,19 +105,32 @@ export const useAuthentication = () => {
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
+  const handleCustomerSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     
     setLoading(true);
     
     try {
+      // Basic validation
+      if (!email || !password || !firstName || !lastName || !phone) {
+        toast({
+          title: "Error",
+          description: "Please fill in all required fields",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            user_type: userType
+            user_type: 'customer',
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone
           }
         }
       });
@@ -132,8 +146,13 @@ export const useAuthentication = () => {
 
       if (data.user) {
         setShowVerifyAlert(true);
+        // Reset form
         setEmail("");
         setPassword("");
+        setFirstName("");
+        setLastName("");
+        setPhone("");
+        
         toast({
           title: "Success",
           description: "Please check your email to verify your account before logging in.",
@@ -155,13 +174,17 @@ export const useAuthentication = () => {
     setEmail,
     password,
     setPassword,
-    userType,
-    setUserType,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    phone,
+    setPhone,
     loading,
     showVerifyAlert,
     rememberMe,
     setRememberMe,
     handleLogin,
-    handleSignUp
+    handleCustomerSignUp
   };
 };

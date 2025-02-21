@@ -10,26 +10,42 @@ const RegisterPage = () => {
     setEmail,
     password,
     setPassword,
-    userType,
-    setUserType,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    phone,
+    setPhone,
     loading,
     showVerifyAlert,
-    handleSignUp
+    handleCustomerSignUp
   } = useAuthentication();
 
   return (
     <AuthCard showVerifyAlert={showVerifyAlert}>
       <div className="space-y-6">
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
+          <p className="text-sm text-muted-foreground">
+            Join our community of happy customers and experience our premium cleaning services
+          </p>
+        </div>
+
         <RegisterForm
           email={email}
           password={password}
-          userType={userType}
+          firstName={firstName}
+          lastName={lastName}
+          phone={phone}
           loading={loading}
           onEmailChange={(e) => setEmail(e.target.value)}
           onPasswordChange={(e) => setPassword(e.target.value)}
-          onUserTypeChange={setUserType}
-          onSubmit={handleSignUp}
+          onFirstNameChange={(e) => setFirstName(e.target.value)}
+          onLastNameChange={(e) => setLastName(e.target.value)}
+          onPhoneChange={(e) => setPhone(e.target.value)}
+          onSubmit={handleCustomerSignUp}
         />
+
         <div className="text-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
