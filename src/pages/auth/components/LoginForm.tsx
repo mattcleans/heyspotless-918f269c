@@ -14,6 +14,7 @@ interface LoginFormProps {
   onSubmit: (e: React.FormEvent) => void;
   rememberMe: boolean;
   onRememberMeChange: (checked: boolean) => void;
+  onForgotPasswordClick: () => void;
 }
 
 export const LoginForm = ({
@@ -24,7 +25,8 @@ export const LoginForm = ({
   onPasswordChange,
   onSubmit,
   rememberMe,
-  onRememberMeChange
+  onRememberMeChange,
+  onForgotPasswordClick
 }: LoginFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   
@@ -60,18 +62,28 @@ export const LoginForm = ({
           {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </Button>
       </div>
-      <div className="flex items-center space-x-2">
-        <Checkbox 
-          id="remember"
-          checked={rememberMe}
-          onCheckedChange={onRememberMeChange}
-        />
-        <label
-          htmlFor="remember"
-          className="text-sm text-muted-foreground cursor-pointer"
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Checkbox 
+            id="remember"
+            checked={rememberMe}
+            onCheckedChange={onRememberMeChange}
+          />
+          <label
+            htmlFor="remember"
+            className="text-sm text-muted-foreground cursor-pointer"
+          >
+            Keep me signed in
+          </label>
+        </div>
+        <Button
+          type="button"
+          variant="link"
+          className="px-0 font-normal"
+          onClick={onForgotPasswordClick}
         >
-          Keep me signed in
-        </label>
+          Forgot password?
+        </Button>
       </div>
       <Button type="submit" className="w-full bg-[#0066B3]" disabled={loading}>
         <LogIn className="mr-2 h-4 w-4" />

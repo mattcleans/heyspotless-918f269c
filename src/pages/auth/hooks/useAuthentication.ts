@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -14,19 +13,18 @@ export const useAuthentication = () => {
   const [loading, setLoading] = useState(false);
   const [showVerifyAlert, setShowVerifyAlert] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const setAuth = useAuthStore((state) => state.setAuth);
   const mounted = useRef(true);
 
-  // Set up cleanup on unmount
   useEffect(() => {
     return () => {
       mounted.current = false;
     };
   }, []);
 
-  // Safe state setter that only updates if component is mounted
   const safeSetLoading = (value: boolean) => {
     if (mounted.current) {
       setLoading(value);
@@ -120,7 +118,6 @@ export const useAuthentication = () => {
           description: "Successfully logged in",
         });
         
-        // Immediate navigation to home after successful login
         console.log("Navigating to dashboard");
         navigate("/", { replace: true });
       }
@@ -180,7 +177,6 @@ export const useAuthentication = () => {
 
       if (data.user) {
         setShowVerifyAlert(true);
-        // Reset form
         setEmail("");
         setPassword("");
         setFirstName("");
@@ -203,6 +199,79 @@ export const useAuthentication = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (loading) return;
+    
+    safeSetLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Check your email",
+        description: "We've sent you a password reset link.",
+      });
+      
+      setEmail("");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      safeSetLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (newPassword: string) => {
+    if (loading) return;
+    
+    safeSetLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Your password has been updated.",
+      });
+      
+      navigate("/auth", { replace: true });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      safeSetLoading(false);
+    }
+  };
+
   return {
     email,
     setEmail,
@@ -218,8 +287,11 @@ export const useAuthentication = () => {
     showVerifyAlert,
     rememberMe,
     setRememberMe,
+    isResetMode,
+    setIsResetMode,
     handleLogin,
-    handleCustomerSignUp
+    handleCustomerSignUp,
+    handleForgotPassword,
+    handleResetPassword
   };
 };
-

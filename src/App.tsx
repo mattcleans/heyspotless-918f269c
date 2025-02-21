@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { create } from "zustand";
@@ -12,6 +11,7 @@ import MessagesPage from "@/pages/messages";
 import AuthPage from "@/pages/auth";
 import RegisterPage from "@/pages/register";
 import EditProfilePage from "@/pages/profile/EditProfilePage";
+import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthState {
@@ -157,6 +157,7 @@ function App() {
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<IndexPage />} />
           <Route path="clients" element={renderProtectedRoute(<ClientsPage />)} />
