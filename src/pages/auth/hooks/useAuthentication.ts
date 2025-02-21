@@ -34,6 +34,7 @@ export const useAuthentication = () => {
 
           if (profileData) {
             setAuth(session.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
+            navigate("/", { replace: true });
           }
         }
       } catch (error) {
@@ -42,7 +43,7 @@ export const useAuthentication = () => {
     };
 
     recoverSession();
-  }, [setAuth]);
+  }, [setAuth, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +60,12 @@ export const useAuthentication = () => {
 
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
+        options: {
+          data: {
+            persistSession: rememberMe
+          }
+        }
       });
 
       if (signInError) {
@@ -93,6 +99,11 @@ export const useAuthentication = () => {
         console.error("Profile fetch error:", profileError);
         throw new Error("Could not fetch user profile. Please try again.");
       }
+
+      console.log("Login successful, setting auth state with:", {
+        userId: authData.user.id,
+        userType: profileData.user_type
+      });
 
       setAuth(authData.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
       navigate("/", { replace: true });
