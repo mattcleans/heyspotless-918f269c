@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -16,106 +16,87 @@ export const useAuthentication = () => {
   const { toast } = useToast();
   const setAuth = useAuthStore((state) => state.setAuth);
 
-  useEffect(() => {
-    const recoverSession = async () => {
-      try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) {
-          console.error("Session recovery error:", error);
-          return;
-        }
-        
-        if (session?.user) {
-          const { data: profileData } = await supabase
-            .from('profiles')
-            .select('user_type')
-            .eq('id', session.user.id)
-            .maybeSingle();
-
-          if (profileData) {
-            setAuth(session.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
-            navigate("/", { replace: true });
-          }
-        }
-      } catch (error) {
-        console.error("Session recovery failed:", error);
-      }
-    };
-
-    recoverSession();
-  }, [setAuth, navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
     
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      setShowVerifyAlert(false);
-      console.log("Starting login process...");
-      
+      // Basic validation
       if (!email || !password) {
-        throw new Error("Please enter both email and password");
+        toast({
+          title: "Error",
+          description: "Please enter both email and password",
+          variant: "destructive",
+        });
+        return;
       }
 
-      const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
+      // Step 1: Sign in
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
-      if (signInError) {
-        throw signInError;
+      if (error) {
+        if (error.message.includes("Email not confirmed")) {
+          setShowVerifyAlert(true);
+          toast({
+            title: "Verification Required",
+            description: "Please check your email and verify your account before signing in.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
+        return;
       }
 
-      if (!authData?.user) {
-        throw new Error("No user data received");
+      if (!data.user) {
+        toast({
+          title: "Error",
+          description: "No user data received",
+          variant: "destructive",
+        });
+        return;
       }
 
-      const { data: profileData, error: profileError } = await supabase
+      // Step 2: Get user profile
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('user_type')
-        .eq('id', authData.user.id)
+        .eq('id', data.user.id)
         .maybeSingle();
 
-      if (profileError) {
-        throw profileError;
+      if (profileError || !profile) {
+        toast({
+          title: "Error",
+          description: "Failed to load user profile",
+          variant: "destructive",
+        });
+        return;
       }
 
-      if (!profileData) {
-        throw new Error("Profile not found");
-      }
+      // Step 3: Update auth state
+      setAuth(data.user.id, profile.user_type as 'staff' | 'customer' | 'admin');
 
-      setAuth(authData.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
-      
-      // Show success toast and reset form
+      // Step 4: Show success message
       toast({
-        title: "Success",
-        description: "Successfully logged in!",
+        title: "Welcome back!",
+        description: "Successfully logged in",
       });
-      
-      setEmail("");
-      setPassword("");
-      
-      // Navigate after everything else is done
+
+      // Step 5: Navigate
       navigate("/", { replace: true });
-      
-    } catch (error: any) {
-      console.error("Login error:", error);
-      
-      let errorMessage = "An unexpected error occurred";
-      
-      if (error.message.includes("Email not confirmed")) {
-        setShowVerifyAlert(true);
-        errorMessage = "Please verify your email address before signing in. Check your inbox for a confirmation link.";
-      } else if (error.message.includes("Invalid login credentials")) {
-        errorMessage = "Invalid email or password. Please try again.";
-      } else if (error.message === "Profile not found") {
-        errorMessage = "User profile not found. Please contact support.";
-      }
-      
+    } catch (error) {
       toast({
-        title: "Login Failed",
-        description: errorMessage,
+        title: "Error",
+        description: "An unexpected error occurred",
         variant: "destructive",
       });
     } finally {
@@ -127,11 +108,9 @@ export const useAuthentication = () => {
     e.preventDefault();
     if (loading) return;
     
+    setLoading(true);
+    
     try {
-      setLoading(true);
-      setShowVerifyAlert(false);
-      console.log("Starting signup process...");
-      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -143,29 +122,27 @@ export const useAuthentication = () => {
       });
 
       if (error) {
-        throw error;
+        toast({
+          title: "Registration Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
       }
 
       if (data.user) {
         setShowVerifyAlert(true);
-        toast({
-          title: "Success",
-          description: "Registration successful! Please check your email to verify your account before logging in.",
-        });
         setEmail("");
         setPassword("");
+        toast({
+          title: "Success",
+          description: "Please check your email to verify your account before logging in.",
+        });
       }
-    } catch (error: any) {
-      console.error("Signup error:", error);
-      let errorMessage = "Registration failed. Please try again.";
-      
-      if (error.status === 429) {
-        errorMessage = "Please wait a minute before trying to sign up again.";
-      }
-      
+    } catch (error) {
       toast({
-        title: "Registration Failed",
-        description: errorMessage,
+        title: "Error",
+        description: "An unexpected error occurred during registration",
         variant: "destructive",
       });
     } finally {
