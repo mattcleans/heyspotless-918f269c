@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/App";
@@ -23,10 +22,17 @@ const ClientDashboard = () => {
         .from('bookings')
         .select(`
           *,
-          cleaner:cleaner_id (
+          cleaner:cleaner_profiles!bookings_cleaner_id_fkey (
+            id,
             hourly_rate,
             bio,
-            profiles:cleaner_profiles_id_fkey (user_type)
+            created_at,
+            status,
+            availability,
+            years_experience,
+            profile:profiles (
+              user_type
+            )
           )
         `)
         .eq('user_id', userId)
@@ -36,7 +42,15 @@ const ClientDashboard = () => {
         .limit(5);
 
       if (error) throw error;
-      return data;
+
+      // Transform data to match expected type
+      return data?.map(booking => ({
+        ...booking,
+        cleaner: booking.cleaner && {
+          ...booking.cleaner,
+          profiles: booking.cleaner.profile
+        }
+      })) ?? [];
     },
     enabled: isAuthenticated
   });

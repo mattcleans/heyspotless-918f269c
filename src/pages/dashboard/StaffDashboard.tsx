@@ -55,10 +55,14 @@ const StaffDashboard = () => {
         .from('bookings')
         .select(`
           *,
-          cleaner:cleaner_profiles(
+          cleaner:cleaner_profiles!bookings_cleaner_id_fkey(
             id,
             hourly_rate,
             bio,
+            created_at,
+            status,
+            availability,
+            years_experience,
             profile:profiles(
               user_type
             )
