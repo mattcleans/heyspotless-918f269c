@@ -1,22 +1,18 @@
 
-import { useState, useRef, useEffect } from "react";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageSquare, Phone, Video, History, Search, Users, UserCheck } from "lucide-react";
-import { useMessagesStore, type Contact, type Message } from "@/services/messages";
-import { format } from "date-fns";
+import { useState } from "react";
+import { useMessagesStore, type Contact } from "@/services/messages";
 import { useAuthStore } from "@/App";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { GuestChat } from "./components/GuestChat";
+import { ContactsList } from "./components/ContactsList";
+import { ChatArea } from "./components/ChatArea";
 
 const MessagesPage = () => {
   const { contacts, messages, selectedContact, setSelectedContact, addMessage, filter, setFilter } = useMessagesStore();
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { isAuthenticated, userId } = useAuthStore();
+  const { isAuthenticated } = useAuthStore();
 
   // Create a default HQ contact for non-authenticated users
   const hqContact: Contact = {
@@ -28,11 +24,9 @@ const MessagesPage = () => {
   };
 
   // Set HQ as selected contact for non-authenticated users
-  useEffect(() => {
-    if (!isAuthenticated) {
-      setSelectedContact(hqContact);
-    }
-  }, [isAuthenticated]);
+  if (!isAuthenticated && !selectedContact) {
+    setSelectedContact(hqContact);
+  }
 
   // Filter contacts based on search query and type
   const filteredContacts = isAuthenticated 
@@ -50,26 +44,20 @@ const MessagesPage = () => {
       (message.senderId === 'currentUser' && message.receiverId === selectedContact?.id)
   );
 
-  // Scroll to bottom of messages
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [contactMessages]);
-
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedContact) return;
 
-    // Add message to local state
-    addMessage({
+    const newMessage = {
+      id: Math.random().toString(),
       content: messageInput,
       senderId: 'currentUser',
       receiverId: selectedContact.id,
       timestamp: new Date(),
-      id: Math.random().toString()
-    });
+      status: 'sent' as const
+    };
+
+    // Add message to local state
+    addMessage(newMessage);
 
     // If user is not authenticated and sending to HQ, store in Supabase
     if (!isAuthenticated && selectedContact.id === 'hq') {
@@ -93,263 +81,46 @@ const MessagesPage = () => {
     setMessageInput("");
   };
 
-  const formatMessageTime = (date: Date) => {
-    return format(date, 'h:mm a');
-  };
-
   // For non-authenticated users, only show the chat area
   if (!isAuthenticated) {
     return (
-      <div className="h-[calc(100vh-5rem)] p-6">
-        <div className="h-full">
-          <Card className="h-full flex flex-col">
-            {/* Chat Header */}
-            <div className="p-4 border-b flex justify-between items-center">
-              <div>
-                <h2 className="font-semibold text-[#1B365D]">Hey Spotless HQ</h2>
-                <p className="text-sm text-[#1B365D]/60">Customer Support</p>
-              </div>
-            </div>
-
-            {/* Chat Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div className="space-y-4">
-                <div className="flex gap-2 items-start">
-                  <div className="p-3 rounded-lg max-w-[80%] bg-[#0066B3]/10 text-[#1B365D]">
-                    <p>Welcome to Hey Spotless! How can we help you today?</p>
-                    <span className="text-xs mt-1 block text-[#1B365D]/60">
-                      {formatMessageTime(new Date())}
-                    </span>
-                  </div>
-                </div>
-                {contactMessages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={`flex gap-2 items-start ${
-                      message.senderId === 'currentUser' ? 'justify-end' : ''
-                    }`}
-                  >
-                    <div
-                      className={`p-3 rounded-lg max-w-[80%] ${
-                        message.senderId === 'currentUser'
-                          ? 'bg-[#0066B3] text-white'
-                          : 'bg-[#0066B3]/10 text-[#1B365D]'
-                      }`}
-                    >
-                      <p>{message.content}</p>
-                      <span className={`text-xs mt-1 block ${
-                        message.senderId === 'currentUser' ? 'text-white/60' : 'text-[#1B365D]/60'
-                      }`}>
-                        {formatMessageTime(message.timestamp)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Message Input */}
-            <div className="p-4 border-t">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Type a message..."
-                  className="flex-1"
-                  value={messageInput}
-                  onChange={(e) => setMessageInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSendMessage();
-                    }
-                  }}
-                />
-                <Button
-                  className="bg-[#0066B3]"
-                  onClick={handleSendMessage}
-                  disabled={!messageInput.trim()}
-                >
-                  <MessageSquare className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </div>
+      <GuestChat
+        messages={contactMessages}
+        messageInput={messageInput}
+        onMessageChange={setMessageInput}
+        onSendMessage={handleSendMessage}
+      />
     );
   }
 
-  // Return original messages interface for authenticated users
+  // Return authenticated user interface
   return (
     <div className="h-[calc(100vh-5rem)] p-6">
       <div className="h-full grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Contacts List */}
-        <Card className="md:col-span-1 h-full flex flex-col">
-          <div className="p-4 border-b space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search contacts..."
-                className="pl-9"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={filter === 'all' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilter('all')}
-                className="flex-1"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                All
-              </Button>
-              <Button
-                variant={filter === 'client' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilter('client')}
-                className="flex-1"
-              >
-                <UserCheck className="h-4 w-4 mr-2" />
-                Clients
-              </Button>
-              <Button
-                variant={filter === 'employee' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilter('employee')}
-                className="flex-1"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Team
-              </Button>
+        <ContactsList
+          contacts={filteredContacts}
+          selectedContact={selectedContact}
+          searchQuery={searchQuery}
+          filter={filter}
+          onContactSelect={setSelectedContact}
+          onSearchChange={setSearchQuery}
+          onFilterChange={setFilter}
+        />
+        {selectedContact ? (
+          <ChatArea
+            selectedContact={selectedContact}
+            messages={contactMessages}
+            messageInput={messageInput}
+            onMessageChange={setMessageInput}
+            onSendMessage={handleSendMessage}
+          />
+        ) : (
+          <div className="md:col-span-3 h-full flex items-center justify-center">
+            <div className="text-center text-[#1B365D]/60">
+              Select a conversation to start messaging
             </div>
           </div>
-          <ScrollArea className="flex-1">
-            <div className="p-4 space-y-2">
-              {filteredContacts.map((contact) => (
-                <div
-                  key={contact.id}
-                  onClick={() => setSelectedContact(contact)}
-                  className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                    selectedContact?.id === contact.id
-                      ? "bg-[#0066B3] text-white"
-                      : "hover:bg-[#A8E6EF]/10"
-                  }`}
-                >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="font-medium">{contact.name}</p>
-                      <p className="text-sm opacity-70">
-                        {contact.type === 'employee' && contact.role ? contact.role : 
-                         contact.type === 'client' ? 'Client' : ''}
-                      </p>
-                    </div>
-                    <span className={`h-2 w-2 rounded-full ${
-                      contact.status === 'online' ? 'bg-green-500' : 'bg-gray-400'
-                    }`} />
-                  </div>
-                  <p className="text-sm mt-1 opacity-70">
-                    {contact.status === 'offline' && contact.lastSeen
-                      ? `Last seen ${format(contact.lastSeen, 'h:mm a')}`
-                      : contact.status}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </Card>
-
-        {/* Chat Area */}
-        <Card className="md:col-span-3 h-full flex flex-col">
-          {selectedContact ? (
-            <>
-              {/* Chat Header */}
-              <div className="p-4 border-b flex justify-between items-center">
-                <div>
-                  <h2 className="font-semibold text-[#1B365D]">
-                    {selectedContact.name}
-                  </h2>
-                  <p className="text-sm text-[#1B365D]/60">
-                    {selectedContact.status === 'online' ? 'Online' : 
-                      selectedContact.lastSeen ? `Last seen ${format(selectedContact.lastSeen, 'h:mm a')}` : 'Offline'}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="icon">
-                    <Phone className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon">
-                    <Video className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="icon">
-                    <History className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-
-              {/* Chat Messages */}
-              <ScrollArea className="flex-1 p-4">
-                <div className="space-y-4">
-                  {contactMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex gap-2 items-start ${
-                        message.senderId === 'currentUser' ? 'justify-end' : ''
-                      }`}
-                    >
-                      <div
-                        className={`p-3 rounded-lg max-w-[80%] ${
-                          message.senderId === 'currentUser'
-                            ? 'bg-[#0066B3] text-white'
-                            : 'bg-[#0066B3]/10 text-[#1B365D]'
-                        }`}
-                      >
-                        <p>{message.content}</p>
-                        <span className={`text-xs mt-1 block ${
-                          message.senderId === 'currentUser' ? 'text-white/60' : 'text-[#1B365D]/60'
-                        }`}>
-                          {formatMessageTime(message.timestamp)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  <div ref={messagesEndRef} />
-                </div>
-              </ScrollArea>
-
-              {/* Message Input */}
-              <div className="p-4 border-t">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Type a message..."
-                    className="flex-1"
-                    value={messageInput}
-                    onChange={(e) => setMessageInput(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter') {
-                        handleSendMessage();
-                      }
-                    }}
-                  />
-                  <Button
-                    className="bg-[#0066B3]"
-                    onClick={handleSendMessage}
-                    disabled={!messageInput.trim()}
-                  >
-                    <MessageSquare className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center text-[#1B365D]/60">
-                <MessageSquare className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Select a conversation to start messaging</p>
-              </div>
-            </div>
-          )}
-        </Card>
+        )}
       </div>
     </div>
   );
