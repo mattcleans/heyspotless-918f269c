@@ -58,14 +58,15 @@ export const useAuthentication = () => {
         throw new Error("Please enter both email and password");
       }
 
+      // Set session persistence based on rememberMe
+      await supabase.auth.setSession({
+        access_token: '',
+        refresh_token: ''
+      });
+
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
-        password,
-        options: {
-          data: {
-            persistSession: rememberMe
-          }
-        }
+        password
       });
 
       if (signInError) {
