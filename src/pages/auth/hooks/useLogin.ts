@@ -23,13 +23,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
 export const useLogin = () => {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showVerifyAlert, setShowVerifyAlert] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const setAuth = useAuthStore((state) => state.setAuth);
   const mounted = useRef(true);
 
   useEffect(() => {
@@ -56,83 +54,41 @@ export const useLogin = () => {
     safeSetLoading(true);
     
     try {
-      if (!email || !password) {
-        console.log("Missing credentials");
+      if (!email) {
+        console.log("Missing email");
         toast({
           title: "Error",
-          description: "Please enter both email and password",
+          description: "Please enter your email address",
           variant: "destructive",
         });
         safeSetLoading(false);
         return;
       }
 
-      console.log("Authenticating with Supabase");
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      console.log("Sending magic link");
+      const { error } = await supabase.auth.signInWithOtp({
         email,
-        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
       });
 
-      if (authError) {
-        console.error("Auth error:", authError);
-        if (authError.message.includes("Email not confirmed")) {
-          setShowVerifyAlert(true);
-          toast({
-            title: "Verification Required",
-            description: "Please check your email and verify your account before signing in.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Login Failed",
-            description: authError.message,
-            variant: "destructive",
-          });
-        }
-        safeSetLoading(false);
-        return;
-      }
-
-      if (!authData.user) {
-        console.error("No user data received");
+      if (error) {
+        console.error("Auth error:", error);
         toast({
-          title: "Error",
-          description: "Login failed - no user data received",
+          title: "Login Failed",
+          description: error.message,
           variant: "destructive",
         });
         safeSetLoading(false);
         return;
       }
-
-      console.log("Fetching user profile");
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_type')
-        .eq('id', authData.user.id)
-        .single();
-
-      if (profileError || !profile) {
-        console.error("Profile error:", profileError);
-        toast({
-          title: "Error",
-          description: "Failed to load user profile",
-          variant: "destructive",
-        });
-        safeSetLoading(false);
-        return;
-      }
-
-      console.log("Setting auth state");
-      setAuth(authData.user.id, profile.user_type as 'staff' | 'customer' | 'admin');
 
       if (mounted.current) {
         toast({
-          title: "Welcome back!",
-          description: "Successfully logged in",
+          title: "Check your email",
+          description: "We've sent you a magic link to sign in",
         });
-        
-        console.log("Navigating to dashboard");
-        navigate("/", { replace: true });
       }
     } catch (error) {
       console.error("Unexpected error:", error);
@@ -153,8 +109,6 @@ export const useLogin = () => {
   return {
     email,
     setEmail,
-    password,
-    setPassword,
     loading,
     showVerifyAlert,
     rememberMe,
@@ -162,4 +116,3 @@ export const useLogin = () => {
     handleLogin
   };
 };
-
