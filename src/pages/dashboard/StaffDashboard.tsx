@@ -75,11 +75,11 @@ const StaffDashboard = () => {
       // Transform data to match expected type
       return data?.map(booking => ({
         ...booking,
-        cleaner: booking.cleaner ? {
+        cleaner: booking.cleaner && {
           ...booking.cleaner,
           profiles: booking.cleaner.profile
         }
-      }));
+      })) ?? [];
     }
   });
 
