@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FrequencySelector } from "./components/FrequencySelector";
@@ -71,6 +70,7 @@ const QuotePage = () => {
   const [total, setTotal] = useState<number>(60);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
   const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | null>(null);
+  const [discountAmount, setDiscountAmount] = useState<number>(0);
 
   useEffect(() => {
     const fetchServiceTypes = async () => {
@@ -109,9 +109,8 @@ const QuotePage = () => {
   };
 
   useEffect(() => {
-    const frequencyMultiplier =
-      frequencies.find((f) => f.id === selectedFrequency)?.priceMultiplier || 1;
-
+    const frequency = frequencies.find((f) => f.id === selectedFrequency);
+    const frequencyMultiplier = frequency?.priceMultiplier || 1;
     const serviceTypeMultiplier = selectedServiceType?.price_multiplier || 1;
 
     const roomsTotal = Object.entries(roomCounts).reduce(
@@ -125,8 +124,13 @@ const QuotePage = () => {
       0
     );
 
-    const arrivalFee = 60 * frequencyMultiplier;
-    const calculatedTotal = (roomsTotal * frequencyMultiplier * serviceTypeMultiplier) + extrasTotal + arrivalFee;
+    const arrivalFee = 60;
+    const subtotalBeforeDiscount = (roomsTotal * serviceTypeMultiplier) + extrasTotal + arrivalFee;
+    const discountMultiplier = 1 - frequencyMultiplier;
+    
+    setDiscountAmount(discountMultiplier);
+    
+    const calculatedTotal = (subtotalBeforeDiscount * frequencyMultiplier);
     setTotal(calculatedTotal);
   }, [selectedFrequency, roomCounts, selectedExtras, selectedServiceType]);
 
@@ -182,6 +186,7 @@ const QuotePage = () => {
         frequencyName={frequencies.find(f => f.id === selectedFrequency)?.name || ""}
         serviceTypeName={selectedServiceType?.name || ""}
         onBookNow={handleBookNow}
+        discountAmount={discountAmount}
       />
     </div>
   );
