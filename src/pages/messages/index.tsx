@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -66,6 +67,8 @@ const MessagesPage = () => {
       content: messageInput,
       senderId: 'currentUser',
       receiverId: selectedContact.id,
+      timestamp: new Date(),
+      id: Math.random().toString()
     });
 
     // If user is not authenticated and sending to HQ, store in Supabase
