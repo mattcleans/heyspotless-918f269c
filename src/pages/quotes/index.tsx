@@ -168,6 +168,7 @@ const QuotePage = () => {
         rooms={rooms}
         roomCounts={roomCounts}
         onUpdateRoomCount={updateRoomCount}
+        selectedServiceType={selectedServiceType}
       />
 
       <ExtrasSelector
