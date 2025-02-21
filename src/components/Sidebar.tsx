@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Home, Users, Calendar, DollarSign, MessageSquare, Menu, X } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Home, Users, Calendar, DollarSign, MessageSquare, Menu, X, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/App";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const staffMenuItems = [
   {
@@ -61,9 +62,11 @@ const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const location = useLocation();
+  const navigate = useNavigate();
   const userType = useAuthStore((state) => state.userType);
   const userId = useAuthStore((state) => state.userId);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const setAuth = useAuthStore((state) => state.setAuth);
 
   const menuItems = userType === 'staff' ? staffMenuItems : customerMenuItems;
 
@@ -110,6 +113,20 @@ const Sidebar = () => {
       subscription.unsubscribe();
     };
   }, [isAuthenticated, userId]);
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      setAuth(null, null);
+      toast.success("Successfully logged out");
+      navigate("/auth", { replace: true });
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast.error("Error logging out. Please try again.");
+    }
+  };
 
   return (
     <>
@@ -168,12 +185,22 @@ const Sidebar = () => {
             })}
           </nav>
 
-          <div className="p-6">
+          <div className="p-6 space-y-4">
             <div className="p-4 rounded-lg bg-[#A8E6EF]/10">
               <p className="text-sm text-[#0066B3]">
                 Need help? Contact support
               </p>
             </div>
+            
+            {isAuthenticated && (
+              <button
+                onClick={handleLogout}
+                className="flex items-center w-full px-4 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="w-5 h-5 mr-3" />
+                Log Out
+              </button>
+            )}
           </div>
         </div>
       </aside>
@@ -189,3 +216,4 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
+
