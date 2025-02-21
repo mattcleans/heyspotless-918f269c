@@ -60,13 +60,15 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
       }
 
       // Transform contacts data
-      const formattedContacts: Contact[] = contacts.map(contact => ({
-        id: contact.id,
-        name: `${contact.first_name} ${contact.last_name}`,
-        status: 'online', // You might want to implement real presence tracking
-        type: contact.user_type === 'staff' ? 'employee' : 'client',
-        role: contact.user_type === 'staff' ? 'Cleaning Specialist' : undefined
-      }));
+      const formattedContacts: Contact[] = contacts
+        .filter(contact => contact.first_name && contact.last_name) // Only include contacts with names
+        .map(contact => ({
+          id: contact.id,
+          name: `${contact.first_name} ${contact.last_name}`,
+          status: 'online', // You might want to implement real presence tracking
+          type: contact.user_type === 'staff' ? 'employee' : 'client',
+          role: contact.user_type === 'staff' ? 'Cleaning Specialist' : undefined
+        }));
 
       set({ 
         messages: messages.map(msg => ({

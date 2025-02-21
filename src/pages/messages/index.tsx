@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { 
   MessageSquare, 
   Search, 
-  Users, 
+  Users,
   UserCheck,
   Phone,
   Video,
@@ -23,7 +23,7 @@ const MessagesPage = () => {
   const { contacts, messages, selectedContact, setSelectedContact, addMessage, fetchMessages, filter, setFilter } = useMessagesStore();
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const { isAuthenticated, userId } = useAuthStore();
+  const { isAuthenticated, userId, userType } = useAuthStore();
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -31,7 +31,7 @@ const MessagesPage = () => {
     }
   }, [isAuthenticated, fetchMessages]);
 
-  // Create a default HQ contact for non-authenticated users
+  // Create a default HQ contact for all users
   const hqContact: Contact = {
     id: 'hq',
     name: 'Hey Spotless HQ',
@@ -45,11 +45,17 @@ const MessagesPage = () => {
     setSelectedContact(hqContact);
   }
 
-  // Filter contacts based on search query and type
+  // Filter contacts based on search query, type, and user role
   const filteredContacts = isAuthenticated 
     ? contacts.filter((contact) => {
         const matchesSearch = contact.name.toLowerCase().includes(searchQuery.toLowerCase());
         const matchesFilter = filter === 'all' || contact.type === filter;
+        
+        // For non-staff users, only show employees
+        if (userType !== 'staff') {
+          return matchesSearch && contact.type === 'employee';
+        }
+        
         return matchesSearch && matchesFilter;
       })
     : [hqContact];
@@ -185,35 +191,37 @@ const MessagesPage = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
-              <Button
-                variant={filter === 'all' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilter('all')}
-                className="flex-1"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                All
-              </Button>
-              <Button
-                variant={filter === 'client' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilter('client')}
-                className="flex-1"
-              >
-                <UserCheck className="h-4 w-4 mr-2" />
-                Clients
-              </Button>
-              <Button
-                variant={filter === 'employee' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setFilter('employee')}
-                className="flex-1"
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Team
-              </Button>
-            </div>
+            {userType === 'staff' && (
+              <div className="flex gap-2">
+                <Button
+                  variant={filter === 'all' ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilter('all')}
+                  className="flex-1"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  All
+                </Button>
+                <Button
+                  variant={filter === 'client' ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilter('client')}
+                  className="flex-1"
+                >
+                  <UserCheck className="h-4 w-4 mr-2" />
+                  Clients
+                </Button>
+                <Button
+                  variant={filter === 'employee' ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilter('employee')}
+                  className="flex-1"
+                >
+                  <Users className="h-4 w-4 mr-2" />
+                  Team
+                </Button>
+              </div>
+            )}
           </div>
           <ScrollArea className="flex-1">
             <div className="p-4 space-y-2">
@@ -229,7 +237,7 @@ const MessagesPage = () => {
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <p className="font-medium">{contact.name}</p>
+                      <p className="font-medium">{contact.name || "Unknown Contact"}</p>
                       <p className="text-sm opacity-70">
                         {contact.type === 'employee' && contact.role ? contact.role : 
                          contact.type === 'client' ? 'Client' : ''}
@@ -343,4 +351,3 @@ const MessagesPage = () => {
 };
 
 export default MessagesPage;
-
