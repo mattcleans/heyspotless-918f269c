@@ -48,21 +48,15 @@ export const useAuthentication = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
-    setLoading(true);
-    setShowVerifyAlert(false);
     
     try {
+      setLoading(true);
+      setShowVerifyAlert(false);
       console.log("Starting login process...");
       
       if (!email || !password) {
         throw new Error("Please enter both email and password");
       }
-
-      // Set session persistence based on rememberMe
-      await supabase.auth.setSession({
-        access_token: '',
-        refresh_token: ''
-      });
 
       const { data: authData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
@@ -96,9 +90,14 @@ export const useAuthentication = () => {
         .eq('id', authData.user.id)
         .maybeSingle();
 
-      if (profileError || !profileData) {
+      if (profileError) {
         console.error("Profile fetch error:", profileError);
         throw new Error("Could not fetch user profile. Please try again.");
+      }
+
+      if (!profileData) {
+        console.error("No profile data found");
+        throw new Error("User profile not found. Please contact support.");
       }
 
       console.log("Login successful, setting auth state with:", {
@@ -107,11 +106,11 @@ export const useAuthentication = () => {
       });
 
       setAuth(authData.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
-      navigate("/", { replace: true });
       toast({
         title: "Success",
         description: "Successfully logged in!",
       });
+      navigate("/", { replace: true });
     } catch (error: any) {
       console.error("Final error caught:", error);
       toast({
@@ -127,10 +126,10 @@ export const useAuthentication = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (loading) return;
-    setLoading(true);
-    setShowVerifyAlert(false);
     
     try {
+      setLoading(true);
+      setShowVerifyAlert(false);
       console.log("Starting signup process...");
       
       const { data, error } = await supabase.auth.signUp({
