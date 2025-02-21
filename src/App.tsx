@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { create } from "zustand";
@@ -159,7 +160,7 @@ function App() {
           <Route path="clients" element={renderProtectedRoute(<ClientsPage />)} />
           <Route path="schedule" element={<SchedulePage />} />
           <Route path="quotes" element={<QuotesPage />} />
-          <Route path="messages" element={renderProtectedRoute(<MessagesPage />)} />
+          <Route path="messages" element={<MessagesPage />} /> {/* Removed protection */}
           <Route 
             path="profile/edit" 
             element={isAuthenticated ? <EditProfilePage /> : <AuthPage />} 
