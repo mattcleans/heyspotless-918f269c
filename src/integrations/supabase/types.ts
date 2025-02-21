@@ -410,6 +410,39 @@ export type Database = {
         }
         Relationships: []
       }
+      support_messages: {
+        Row: {
+          admin_id: string | null
+          content: string
+          created_at: string
+          guest_email: string | null
+          guest_ip: string | null
+          id: string
+          sender_type: Database["public"]["Enums"]["sender_type"]
+          status: Database["public"]["Enums"]["message_status"]
+        }
+        Insert: {
+          admin_id?: string | null
+          content: string
+          created_at?: string
+          guest_email?: string | null
+          guest_ip?: string | null
+          id?: string
+          sender_type: Database["public"]["Enums"]["sender_type"]
+          status?: Database["public"]["Enums"]["message_status"]
+        }
+        Update: {
+          admin_id?: string | null
+          content?: string
+          created_at?: string
+          guest_email?: string | null
+          guest_ip?: string | null
+          id?: string
+          sender_type?: Database["public"]["Enums"]["sender_type"]
+          status?: Database["public"]["Enums"]["message_status"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       all_bookings: {
@@ -451,6 +484,8 @@ export type Database = {
     }
     Enums: {
       cleaning_type: "standard" | "deep" | "move"
+      message_status: "unread" | "read" | "answered"
+      sender_type: "guest" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never

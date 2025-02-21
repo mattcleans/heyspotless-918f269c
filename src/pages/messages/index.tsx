@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -78,9 +77,10 @@ const MessagesPage = () => {
             content: messageInput,
             sender_type: 'guest',
             status: 'unread'
-          });
+          } as any);
 
         if (error) throw error;
+        toast.success("Message sent successfully!");
       } catch (error) {
         console.error('Error sending message:', error);
         toast.error("Couldn't send message. Please try again.");
