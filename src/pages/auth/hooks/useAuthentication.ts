@@ -64,24 +64,11 @@ export const useAuthentication = () => {
       });
 
       if (signInError) {
-        console.error("Login error:", signInError);
-        if (signInError.message.includes("Email not confirmed")) {
-          setShowVerifyAlert(true);
-          throw new Error("Please verify your email address before signing in. Check your inbox for a confirmation link.");
-        }
-        if (signInError.message.includes("Invalid login credentials")) {
-          throw new Error(
-            "Login failed. Please check:\n" +
-            "1. Your email address is correct\n" +
-            "2. Your password is correct\n" +
-            "3. You've registered an account (use the Register tab if you haven't)"
-          );
-        }
         throw signInError;
       }
 
-      if (!authData.user) {
-        throw new Error("No user data received. Please try again.");
+      if (!authData?.user) {
+        throw new Error("No user data received");
       }
 
       const { data: profileData, error: profileError } = await supabase
@@ -91,31 +78,44 @@ export const useAuthentication = () => {
         .maybeSingle();
 
       if (profileError) {
-        console.error("Profile fetch error:", profileError);
-        throw new Error("Could not fetch user profile. Please try again.");
+        throw profileError;
       }
 
       if (!profileData) {
-        console.error("No profile data found");
-        throw new Error("User profile not found. Please contact support.");
+        throw new Error("Profile not found");
       }
 
-      console.log("Login successful, setting auth state with:", {
-        userId: authData.user.id,
-        userType: profileData.user_type
-      });
-
       setAuth(authData.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
+      
+      // Show success toast and reset form
       toast({
         title: "Success",
         description: "Successfully logged in!",
       });
+      
+      setEmail("");
+      setPassword("");
+      
+      // Navigate after everything else is done
       navigate("/", { replace: true });
+      
     } catch (error: any) {
-      console.error("Final error caught:", error);
+      console.error("Login error:", error);
+      
+      let errorMessage = "An unexpected error occurred";
+      
+      if (error.message.includes("Email not confirmed")) {
+        setShowVerifyAlert(true);
+        errorMessage = "Please verify your email address before signing in. Check your inbox for a confirmation link.";
+      } else if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "Invalid email or password. Please try again.";
+      } else if (error.message === "Profile not found") {
+        errorMessage = "User profile not found. Please contact support.";
+      }
+      
       toast({
         title: "Login Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -142,13 +142,7 @@ export const useAuthentication = () => {
         }
       });
 
-      console.log("Signup response:", { data, error });
-
       if (error) {
-        console.error("Signup error:", error);
-        if (error.status === 429) {
-          throw new Error("Please wait a minute before trying to sign up again.");
-        }
         throw error;
       }
 
@@ -162,10 +156,16 @@ export const useAuthentication = () => {
         setPassword("");
       }
     } catch (error: any) {
-      console.error("Final signup error:", error);
+      console.error("Signup error:", error);
+      let errorMessage = "Registration failed. Please try again.";
+      
+      if (error.status === 429) {
+        errorMessage = "Please wait a minute before trying to sign up again.";
+      }
+      
       toast({
         title: "Registration Failed",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
