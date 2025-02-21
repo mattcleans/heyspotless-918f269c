@@ -119,21 +119,21 @@ const MessagesPage = () => {
                   <div
                     key={message.id}
                     className={`flex gap-2 items-start ${
-                      message.senderId === 'currentUser' ? 'justify-end' : ''
+                      message.sender_id === userId ? 'justify-end' : ''
                     }`}
                   >
                     <div
                       className={`p-3 rounded-lg max-w-[80%] ${
-                        message.senderId === 'currentUser'
+                        message.sender_id === userId
                           ? 'bg-[#0066B3] text-white'
                           : 'bg-[#0066B3]/10 text-[#1B365D]'
                       }`}
                     >
                       <p>{message.content}</p>
                       <span className={`text-xs mt-1 block ${
-                        message.senderId === 'currentUser' ? 'text-white/60' : 'text-[#1B365D]/60'
+                        message.sender_id === userId ? 'text-white/60' : 'text-[#1B365D]/60'
                       }`}>
-                        {format(message.timestamp, 'h:mm a')}
+                        {format(message.created_at, 'h:mm a')}
                       </span>
                     </div>
                   </div>
@@ -283,21 +283,21 @@ const MessagesPage = () => {
                     <div
                       key={message.id}
                       className={`flex gap-2 items-start ${
-                        message.senderId === 'currentUser' ? 'justify-end' : ''
+                        message.sender_id === userId ? 'justify-end' : ''
                       }`}
                     >
                       <div
                         className={`p-3 rounded-lg max-w-[80%] ${
-                          message.senderId === 'currentUser'
+                          message.sender_id === userId
                             ? 'bg-[#0066B3] text-white'
                             : 'bg-[#0066B3]/10 text-[#1B365D]'
                         }`}
                       >
                         <p>{message.content}</p>
                         <span className={`text-xs mt-1 block ${
-                          message.senderId === 'currentUser' ? 'text-white/60' : 'text-[#1B365D]/60'
+                          message.sender_id === userId ? 'text-white/60' : 'text-[#1B365D]/60'
                         }`}>
-                          {format(message.timestamp, 'h:mm a')}
+                          {format(message.created_at, 'h:mm a')}
                         </span>
                       </div>
                     </div>
@@ -343,3 +343,4 @@ const MessagesPage = () => {
 };
 
 export default MessagesPage;
+

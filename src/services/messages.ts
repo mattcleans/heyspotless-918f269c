@@ -9,7 +9,7 @@ export interface Message {
   sender_id: string;
   receiver_id: string;
   created_at: Date;
-  status: 'read' | 'unread';
+  status: 'read' | 'unread' | 'answered';
 }
 
 export interface Contact {
@@ -82,15 +82,19 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
 
   addMessage: async ({ content, receiver_id }) => {
     try {
+      const { data: userResponse } = await supabase.auth.getUser();
+      if (!userResponse?.user) {
+        throw new Error('No authenticated user found');
+      }
+
       const { data, error } = await supabase
         .from('messages')
-        .insert([
-          {
-            content,
-            receiver_id,
-            status: 'unread'
-          }
-        ])
+        .insert({
+          content,
+          receiver_id,
+          sender_id: userResponse.user.id,
+          status: 'unread'
+        })
         .select()
         .single();
 
