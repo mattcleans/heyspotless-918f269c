@@ -114,14 +114,14 @@ export const useAuthentication = () => {
       console.log("Setting auth state");
       setAuth(authData.user.id, profile.user_type as 'staff' | 'customer' | 'admin');
 
-      toast({
-        title: "Welcome back!",
-        description: "Successfully logged in",
-      });
-
-      // Ensure we're still mounted before navigation
       if (mounted.current) {
-        console.log("Navigating to home");
+        toast({
+          title: "Welcome back!",
+          description: "Successfully logged in",
+        });
+        
+        // Immediate navigation to home after successful login
+        console.log("Navigating to dashboard");
         navigate("/", { replace: true });
       }
     } catch (error) {
@@ -134,7 +134,9 @@ export const useAuthentication = () => {
         });
       }
     } finally {
-      safeSetLoading(false);
+      if (mounted.current) {
+        safeSetLoading(false);
+      }
     }
   };
 
@@ -220,3 +222,4 @@ export const useAuthentication = () => {
     handleCustomerSignUp
   };
 };
+
