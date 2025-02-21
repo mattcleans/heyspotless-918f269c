@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMessagesStore, type Contact } from "@/services/messages";
 import { useAuthStore } from "@/App";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,10 +20,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
 
 const MessagesPage = () => {
-  const { contacts, messages, selectedContact, setSelectedContact, addMessage, filter, setFilter } = useMessagesStore();
+  const { contacts, messages, selectedContact, setSelectedContact, addMessage, fetchMessages, filter, setFilter } = useMessagesStore();
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, userId } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchMessages();
+    }
+  }, [isAuthenticated, fetchMessages]);
 
   // Create a default HQ contact for non-authenticated users
   const hqContact: Contact = {
@@ -51,22 +57,21 @@ const MessagesPage = () => {
   // Get messages for selected contact
   const contactMessages = messages.filter(
     (message) =>
-      (message.senderId === selectedContact?.id && message.receiverId === 'currentUser') ||
-      (message.senderId === 'currentUser' && message.receiverId === selectedContact?.id)
+      (message.sender_id === selectedContact?.id && message.receiver_id === userId) ||
+      (message.sender_id === userId && message.receiver_id === selectedContact?.id)
   );
 
   const handleSendMessage = async () => {
     if (!messageInput.trim() || !selectedContact) return;
 
-    // Add message to local state - only include required properties
-    addMessage({
-      content: messageInput,
-      senderId: 'currentUser',
-      receiverId: selectedContact.id,
-    });
-
-    // If user is not authenticated and sending to HQ, store in Supabase
-    if (!isAuthenticated && selectedContact.id === 'hq') {
+    // For authenticated users, use the messages table
+    if (isAuthenticated) {
+      await addMessage({
+        content: messageInput,
+        receiver_id: selectedContact.id
+      });
+    } else {
+      // For guests, use the support_messages table
       try {
         const { error } = await supabase
           .from('support_messages')
@@ -74,7 +79,7 @@ const MessagesPage = () => {
             content: messageInput,
             sender_type: 'guest',
             status: 'unread'
-          } as any);
+          });
 
         if (error) throw error;
         toast.success("Message sent successfully!");
