@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +18,13 @@ export const useAuthentication = () => {
   const { toast } = useToast();
   const setAuth = useAuthStore((state) => state.setAuth);
   const mounted = useRef(true);
+
+  // Set up cleanup on unmount
+  useEffect(() => {
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   // Safe state setter that only updates if component is mounted
   const safeSetLoading = (value: boolean) => {
@@ -191,11 +199,6 @@ export const useAuthentication = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Cleanup on unmount
-  return () => {
-    mounted.current = false;
   };
 
   return {
