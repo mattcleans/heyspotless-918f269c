@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,28 +20,36 @@ export const useAuthentication = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (loading) return;
     
+    if (loading) {
+      console.log("Login already in progress, preventing duplicate submission");
+      return;
+    }
+    
+    console.log("Starting login process...");
     setLoading(true);
     
     try {
       // Basic validation
       if (!email || !password) {
+        console.log("Missing email or password");
         toast({
           title: "Error",
           description: "Please enter both email and password",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
-      // Step 1: Sign in
-      const { data, error } = await supabase.auth.signInWithPassword({
+      console.log("Attempting to sign in with Supabase...");
+      const { data: { user, session }, error } = await supabase.auth.signInWithPassword({
         email,
         password
       });
 
       if (error) {
+        console.error("Login error:", error);
         if (error.message.includes("Email not confirmed")) {
           setShowVerifyAlert(true);
           toast({
@@ -55,46 +64,68 @@ export const useAuthentication = () => {
             variant: "destructive",
           });
         }
+        setLoading(false);
         return;
       }
 
-      if (!data.user) {
+      if (!user) {
+        console.error("No user data received");
         toast({
           title: "Error",
           description: "No user data received",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
-      // Step 2: Get user profile
+      console.log("Successfully signed in, fetching user profile...");
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('user_type')
-        .eq('id', data.user.id)
+        .eq('id', user.id)
         .maybeSingle();
 
-      if (profileError || !profile) {
+      if (profileError) {
+        console.error("Profile fetch error:", profileError);
         toast({
           title: "Error",
           description: "Failed to load user profile",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
-      // Step 3: Update auth state
-      setAuth(data.user.id, profile.user_type as 'staff' | 'customer' | 'admin');
+      if (!profile) {
+        console.error("No profile found for user:", user.id);
+        toast({
+          title: "Error",
+          description: "No user profile found",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
 
-      // Step 4: Show success message
+      console.log("Setting auth state with:", {
+        userId: user.id,
+        userType: profile.user_type
+      });
+
+      // Update auth state
+      setAuth(user.id, profile.user_type as 'staff' | 'customer' | 'admin');
+
+      // Show success message
       toast({
         title: "Welcome back!",
         description: "Successfully logged in",
       });
 
-      // Step 5: Navigate
+      console.log("Navigating to homepage...");
       navigate("/", { replace: true });
     } catch (error) {
+      console.error("Unexpected error during login:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred",
@@ -112,7 +143,6 @@ export const useAuthentication = () => {
     setLoading(true);
     
     try {
-      // Basic validation
       if (!email || !password || !firstName || !lastName || !phone) {
         toast({
           title: "Error",
