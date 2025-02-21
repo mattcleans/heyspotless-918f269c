@@ -2,14 +2,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/App";
+import { startOfWeek, endOfWeek, addWeeks } from "date-fns";
 import { WelcomeHeader } from "./components/WelcomeHeader";
 import { StaffStats } from "./components/StaffStats";
 import { TodaySchedule } from "./components/TodaySchedule";
 import { RecentReviews } from "./components/RecentReviews";
 import { RecentEarnings } from "./components/RecentEarnings";
+import { UpcomingBookings } from "./components/UpcomingBookings";
 
 const StaffDashboard = () => {
   const { userId } = useAuthStore();
+
+  // Get next week's date range
+  const nextWeekStart = addWeeks(startOfWeek(new Date(), { weekStartsOn: 1 }), 1);
+  const nextWeekEnd = endOfWeek(nextWeekStart, { weekStartsOn: 1 });
 
   const { data: cleanerProfile } = useQuery({
     queryKey: ['cleanerProfile', userId],
@@ -36,6 +42,23 @@ const StaffDashboard = () => {
         .gte('date', new Date().toISOString())
         .order('date', { ascending: true })
         .limit(5);
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const { data: nextWeekBookings } = useQuery({
+    queryKey: ['nextWeekBookings', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('*, cleaner:cleaner_profiles(*)')
+        .eq('cleaner_id', userId)
+        .eq('status', 'confirmed')
+        .gte('date', nextWeekStart.toISOString())
+        .lte('date', nextWeekEnd.toISOString())
+        .order('date', { ascending: true });
 
       if (error) throw error;
       return data;
@@ -84,6 +107,7 @@ const StaffDashboard = () => {
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <TodaySchedule bookings={upcomingBookings} />
+        <UpcomingBookings bookings={nextWeekBookings} />
         <RecentReviews reviews={reviews} />
         <RecentEarnings earnings={earnings} />
       </div>
