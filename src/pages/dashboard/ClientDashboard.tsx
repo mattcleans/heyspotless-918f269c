@@ -71,6 +71,30 @@ const ClientDashboard = () => {
     enabled: isAuthenticated
   });
 
+  const { data: currentCleaner } = useQuery({
+    queryKey: ['currentCleaner', userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('client_cleaner_matches')
+        .select(`
+          *,
+          cleaner:cleaner_id (
+            hourly_rate,
+            bio,
+            years_experience,
+            profiles:cleaner_profiles_id_fkey (user_type)
+          )
+        `)
+        .eq('client_id', userId)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: isAuthenticated
+  });
+
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-8 space-y-8">
