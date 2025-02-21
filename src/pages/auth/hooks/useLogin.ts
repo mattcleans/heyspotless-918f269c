@@ -3,7 +3,23 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useAuthStore } from "@/App";
+import { create } from 'zustand';
+
+// Define the auth store types
+interface AuthStore {
+  userId: string | null;
+  userType: 'staff' | 'customer' | 'admin' | null;
+  setAuth: (userId: string, userType: 'staff' | 'customer' | 'admin') => void;
+  clearAuth: () => void;
+}
+
+// Create the auth store
+export const useAuthStore = create<AuthStore>((set) => ({
+  userId: null,
+  userType: null,
+  setAuth: (userId, userType) => set({ userId, userType }),
+  clearAuth: () => set({ userId: null, userType: null }),
+}));
 
 export const useLogin = () => {
   const [email, setEmail] = useState("");
@@ -146,3 +162,4 @@ export const useLogin = () => {
     handleLogin
   };
 };
+
