@@ -1,6 +1,5 @@
 
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { create } from 'zustand';
@@ -36,7 +35,7 @@ export const useLogin = () => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (loading) {
+    if (loading || !mounted.current) {
       return;
     }
 
@@ -60,26 +59,32 @@ export const useLogin = () => {
       });
 
       if (error) {
-        toast({
-          title: "Login Failed",
-          description: error.message,
-          variant: "destructive",
-        });
+        if (mounted.current) {
+          toast({
+            title: "Login Failed",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         return;
       }
 
-      setShowVerifyAlert(true);
-      toast({
-        title: "Check your email",
-        description: "We've sent you a magic link to sign in",
-      });
+      if (mounted.current) {
+        setShowVerifyAlert(true);
+        toast({
+          title: "Check your email",
+          description: "We've sent you a magic link to sign in",
+        });
+      }
     } catch (error) {
       console.error("Unexpected error:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred",
-        variant: "destructive",
-      });
+      if (mounted.current) {
+        toast({
+          title: "Error",
+          description: "An unexpected error occurred",
+          variant: "destructive",
+        });
+      }
     } finally {
       if (mounted.current) {
         setLoading(false);
@@ -97,3 +102,4 @@ export const useLogin = () => {
     handleLogin
   };
 };
+
