@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -257,7 +258,7 @@ export const useAuthentication = () => {
 
       toast({
         title: "Success",
-        description: "Your password has been updated.",
+        description: "Your password has been updated. Please log in with your new password.",
       });
       
       navigate("/auth", { replace: true });

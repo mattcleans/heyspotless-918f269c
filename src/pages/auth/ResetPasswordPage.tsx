@@ -1,10 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AuthCard } from "./components/AuthCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuthentication } from "./hooks/useAuthentication";
 import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ResetPasswordPage = () => {
   const { loading, handleResetPassword } = useAuthentication();
@@ -12,6 +15,33 @@ const ResetPasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      // If no session, check if we have a reset token in the URL
+      if (!session) {
+        const hash = window.location.hash;
+        const params = new URLSearchParams(hash.substring(1));
+        const type = params.get('type');
+        
+        // If no reset token, redirect to login
+        if (type !== 'recovery') {
+          toast({
+            title: "Error",
+            description: "Invalid or expired reset link. Please request a new one.",
+            variant: "destructive",
+          });
+          navigate('/auth', { replace: true });
+        }
+      }
+    };
+
+    checkSession();
+  }, [navigate, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
