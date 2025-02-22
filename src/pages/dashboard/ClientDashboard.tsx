@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/App";
@@ -30,7 +31,14 @@ const ClientDashboard = () => {
             status,
             availability,
             years_experience,
-            profile:profiles (
+            ssn,
+            background_check_acknowledgment,
+            contractor_acknowledgment,
+            work_eligibility_acknowledgment,
+            emergency_contact_name,
+            emergency_contact_email,
+            emergency_contact_phone,
+            profiles:profiles (
               user_type
             )
           )
@@ -48,7 +56,7 @@ const ClientDashboard = () => {
         ...booking,
         cleaner: booking.cleaner && {
           ...booking.cleaner,
-          profiles: booking.cleaner.profile
+          profiles: booking.cleaner.profiles
         }
       })) ?? [];
     },
@@ -237,13 +245,13 @@ const ClientDashboard = () => {
     );
   }
 
-  // Return existing dashboard for authenticated users
+  // Return dashboard for authenticated users
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <WelcomeHeader />
       <QuickStats 
-        upcomingBookings={upcomingBookings} 
-        currentCleaner={currentCleaner} 
+        upcomingBookings={upcomingBookings}
+        currentCleaner={currentCleaner}
       />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <UpcomingBookings bookings={upcomingBookings} />
@@ -255,3 +263,4 @@ const ClientDashboard = () => {
 };
 
 export default ClientDashboard;
+

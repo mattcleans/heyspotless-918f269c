@@ -63,7 +63,14 @@ const StaffDashboard = () => {
             status,
             availability,
             years_experience,
-            profile:profiles(
+            ssn,
+            background_check_acknowledgment,
+            contractor_acknowledgment,
+            work_eligibility_acknowledgment,
+            emergency_contact_name,
+            emergency_contact_email,
+            emergency_contact_phone,
+            profiles:profiles(
               user_type
             )
           )
@@ -81,7 +88,7 @@ const StaffDashboard = () => {
         ...booking,
         cleaner: booking.cleaner && {
           ...booking.cleaner,
-          profiles: booking.cleaner.profile
+          profiles: booking.cleaner.profiles
         }
       })) ?? [];
     }
@@ -138,3 +145,4 @@ const StaffDashboard = () => {
 };
 
 export default StaffDashboard;
+
