@@ -20,8 +20,6 @@ const CleanerRegistrationPage = () => {
     setPhone,
     ssn,
     setSsn,
-    hourlyRate,
-    setHourlyRate,
     yearsExperience,
     setYearsExperience,
     street,
@@ -70,7 +68,6 @@ const CleanerRegistrationPage = () => {
           lastName={lastName}
           phone={phone}
           ssn={ssn}
-          hourlyRate={hourlyRate}
           yearsExperience={yearsExperience}
           street={street}
           city={city}
@@ -89,7 +86,6 @@ const CleanerRegistrationPage = () => {
           onLastNameChange={(e) => setLastName(e.target.value)}
           onPhoneChange={(e) => setPhone(e.target.value)}
           onSsnChange={(e) => setSsn(e.target.value)}
-          onHourlyRateChange={(e) => setHourlyRate(e.target.value)}
           onYearsExperienceChange={(e) => setYearsExperience(e.target.value)}
           onStreetChange={(e) => setStreet(e.target.value)}
           onCityChange={(e) => setCity(e.target.value)}

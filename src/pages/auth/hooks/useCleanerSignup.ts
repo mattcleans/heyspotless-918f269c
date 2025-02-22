@@ -11,7 +11,6 @@ export const useCleanerSignup = () => {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [ssn, setSsn] = useState("");
-  const [hourlyRate, setHourlyRate] = useState("");
   const [yearsExperience, setYearsExperience] = useState("");
   const [street, setStreet] = useState("");
   const [city, setCity] = useState("");
@@ -34,7 +33,7 @@ export const useCleanerSignup = () => {
     
     try {
       if (!email || !password || !firstName || !lastName || !phone || !ssn || 
-          !hourlyRate || !street || !city || !state || !zipCode || 
+          !street || !city || !state || !zipCode || 
           !emergencyContactName || !emergencyContactPhone || 
           !contractorAcknowledgment || !workEligibilityAcknowledgment || !backgroundCheckAcknowledgment) {
         toast({
@@ -76,7 +75,6 @@ export const useCleanerSignup = () => {
           .insert({
             id: signUpData.user.id,
             ssn,
-            hourly_rate: parseFloat(hourlyRate),
             years_experience: parseInt(yearsExperience) || 0,
             emergency_contact_name: emergencyContactName,
             emergency_contact_email: emergencyContactEmail || null,
@@ -126,7 +124,6 @@ export const useCleanerSignup = () => {
         setLastName("");
         setPhone("");
         setSsn("");
-        setHourlyRate("");
         setYearsExperience("");
         setStreet("");
         setCity("");
@@ -168,8 +165,6 @@ export const useCleanerSignup = () => {
     setPhone,
     ssn,
     setSsn,
-    hourlyRate,
-    setHourlyRate,
     yearsExperience,
     setYearsExperience,
     street,

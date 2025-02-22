@@ -13,7 +13,6 @@ interface CleanerRegistrationFormProps {
   lastName: string;
   phone: string;
   ssn: string;
-  hourlyRate: string;
   yearsExperience: string;
   street: string;
   city: string;
@@ -32,7 +31,6 @@ interface CleanerRegistrationFormProps {
   onLastNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSsnChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onHourlyRateChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onYearsExperienceChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onStreetChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onCityChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -54,7 +52,6 @@ export const CleanerRegistrationForm = ({
   lastName,
   phone,
   ssn,
-  hourlyRate,
   yearsExperience,
   street,
   city,
@@ -73,7 +70,6 @@ export const CleanerRegistrationForm = ({
   onLastNameChange,
   onPhoneChange,
   onSsnChange,
-  onHourlyRateChange,
   onYearsExperienceChange,
   onStreetChange,
   onCityChange,
@@ -187,31 +183,16 @@ export const CleanerRegistrationForm = ({
 
       <div className="space-y-4">
         <h3 className="text-lg font-medium">Professional Information</h3>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="hourlyRate">Hourly Rate ($)*</Label>
-            <Input
-              id="hourlyRate"
-              type="number"
-              min="0"
-              step="0.01"
-              value={hourlyRate}
-              onChange={onHourlyRateChange}
-              required
-              disabled={loading}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="yearsExperience">Years of Experience</Label>
-            <Input
-              id="yearsExperience"
-              type="number"
-              min="0"
-              value={yearsExperience}
-              onChange={onYearsExperienceChange}
-              disabled={loading}
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="yearsExperience">Years of Experience</Label>
+          <Input
+            id="yearsExperience"
+            type="number"
+            min="0"
+            value={yearsExperience}
+            onChange={onYearsExperienceChange}
+            disabled={loading}
+          />
         </div>
       </div>
 
