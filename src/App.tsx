@@ -12,6 +12,7 @@ import AuthPage from "@/pages/auth";
 import RegisterPage from "@/pages/register";
 import EditProfilePage from "@/pages/profile/EditProfilePage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
+import CleanerRegistrationPage from "@/pages/auth/CleanerRegistrationPage";
 import { supabase } from "@/integrations/supabase/client";
 
 interface AuthState {
@@ -39,7 +40,6 @@ function App() {
   const userType = useAuthStore((state) => state.userType);
 
   useEffect(() => {
-    // Initial session check
     const initializeAuth = async () => {
       try {
         console.log("Checking initial session...");
@@ -92,10 +92,8 @@ function App() {
       }
     };
 
-    // Initialize auth state
     initializeAuth();
 
-    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session?.user?.id);
       
@@ -157,6 +155,7 @@ function App() {
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/register/cleaner" element={<CleanerRegistrationPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<IndexPage />} />

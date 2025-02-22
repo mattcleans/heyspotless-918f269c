@@ -101,6 +101,13 @@ export type Database = {
             foreignKeyName: "bookings_cleaner_id_fkey"
             columns: ["cleaner_id"]
             isOneToOne: false
+            referencedRelation: "cleaner_info"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
             referencedRelation: "cleaner_profiles"
             referencedColumns: ["id"]
           },
@@ -111,8 +118,12 @@ export type Database = {
           availability: Json | null
           bio: string | null
           created_at: string
+          emergency_contact_email: string | null
+          emergency_contact_name: string
+          emergency_contact_phone: string
           hourly_rate: number
           id: string
+          ssn: string
           status: string | null
           years_experience: number | null
         }
@@ -120,8 +131,12 @@ export type Database = {
           availability?: Json | null
           bio?: string | null
           created_at?: string
+          emergency_contact_email?: string | null
+          emergency_contact_name: string
+          emergency_contact_phone: string
           hourly_rate: number
           id: string
+          ssn: string
           status?: string | null
           years_experience?: number | null
         }
@@ -129,8 +144,12 @@ export type Database = {
           availability?: Json | null
           bio?: string | null
           created_at?: string
+          emergency_contact_email?: string | null
+          emergency_contact_name?: string
+          emergency_contact_phone?: string
           hourly_rate?: number
           id?: string
+          ssn?: string
           status?: string | null
           years_experience?: number | null
         }
@@ -167,6 +186,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "client_cleaner_matches_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_info"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "client_cleaner_matches_cleaner_id_fkey"
             columns: ["cleaner_id"]
@@ -227,6 +253,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "earnings_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_info"
             referencedColumns: ["id"]
           },
           {
@@ -510,7 +543,38 @@ export type Database = {
             foreignKeyName: "bookings_cleaner_id_fkey"
             columns: ["cleaner_id"]
             isOneToOne: false
+            referencedRelation: "cleaner_info"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
             referencedRelation: "cleaner_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cleaner_info: {
+        Row: {
+          availability: Json | null
+          bio: string | null
+          created_at: string | null
+          first_name: string | null
+          hourly_rate: number | null
+          id: string | null
+          last_name: string | null
+          phone: string | null
+          status: string | null
+          user_type: string | null
+          years_experience: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cleaner_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
