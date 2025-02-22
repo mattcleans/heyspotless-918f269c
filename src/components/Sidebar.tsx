@@ -70,6 +70,20 @@ const Sidebar = () => {
 
   const menuItems = userType === 'staff' ? staffMenuItems : customerMenuItems;
 
+  const getPortalTitle = () => {
+    if (!isAuthenticated) return null;
+    switch (userType) {
+      case 'staff':
+        return 'Employee Portal';
+      case 'admin':
+        return 'Administrator Portal';
+      case 'customer':
+        return 'Customer Portal';
+      default:
+        return 'Customer Portal';
+    }
+  };
+
   useEffect(() => {
     const fetchUnreadMessages = async () => {
       try {
@@ -146,15 +160,25 @@ const Sidebar = () => {
         <div className="flex flex-col h-full">
           <div className="p-6">
             <div className="flex items-center justify-center">
-              <img 
-                src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
-                alt="Hey Spotless Logo" 
-                className="h-20 w-auto"
-              />
+              {isAuthenticated ? (
+                <img 
+                  src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
+                  alt="Hey Spotless Logo" 
+                  className="h-20 w-auto"
+                />
+              ) : (
+                <img 
+                  src="/lovable-uploads/40313fef-8845-45d1-87f4-7f5ab5ecc99a.png" 
+                  alt="Goodbye Spots Hello Sparkle" 
+                  className="h-20 w-auto"
+                />
+              )}
             </div>
-            <p className="text-sm text-[#1B365D] mt-1">
-              {userType === 'staff' ? 'Staff Portal' : 'Customer Portal'}
-            </p>
+            {getPortalTitle() && (
+              <p className="text-sm text-[#1B365D] mt-1 text-center">
+                {getPortalTitle()}
+              </p>
+            )}
           </div>
 
           <nav className="flex-1 px-4 space-y-1">
@@ -216,4 +240,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
