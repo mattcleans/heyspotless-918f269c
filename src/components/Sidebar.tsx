@@ -70,6 +70,21 @@ const Sidebar = () => {
 
   const menuItems = userType === 'staff' ? staffMenuItems : customerMenuItems;
 
+  const getPortalTitle = () => {
+    if (!isAuthenticated) return '';
+    
+    switch (userType) {
+      case 'staff':
+        return 'Employee Portal';
+      case 'admin':
+        return 'Administrator Portal';
+      case 'customer':
+        return 'Customer Portal';
+      default:
+        return '';
+    }
+  };
+
   useEffect(() => {
     const fetchUnreadMessages = async () => {
       try {
@@ -149,9 +164,11 @@ const Sidebar = () => {
                 className="h-20 w-auto"
               />
             </div>
-            <p className="text-sm text-[#1B365D] mt-1">
-              {userType === 'staff' ? 'Staff Portal' : 'Customer Portal'}
-            </p>
+            {isAuthenticated && (
+              <p className="text-sm text-[#1B365D] mt-1">
+                {getPortalTitle()}
+              </p>
+            )}
           </div>
 
           <nav className="flex-1 px-4 space-y-1">
@@ -213,4 +230,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
