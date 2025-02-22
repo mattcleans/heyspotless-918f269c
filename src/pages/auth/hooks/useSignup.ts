@@ -1,9 +1,10 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useSignup = () => {
+  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -11,7 +12,6 @@ export const useSignup = () => {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [showVerifyAlert, setShowVerifyAlert] = useState(false);
-  const { toast } = useToast();
 
   const handleCustomerSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,6 +26,7 @@ export const useSignup = () => {
           description: "Please fill in all required fields",
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
@@ -48,6 +49,7 @@ export const useSignup = () => {
           description: error.message,
           variant: "destructive",
         });
+        setLoading(false);
         return;
       }
 
