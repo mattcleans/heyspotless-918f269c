@@ -45,6 +45,13 @@ export type Database = {
             foreignKeyName: "addresses_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "cleaner_info"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "addresses_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -101,13 +108,6 @@ export type Database = {
             foreignKeyName: "bookings_cleaner_id_fkey"
             columns: ["cleaner_id"]
             isOneToOne: false
-            referencedRelation: "cleaner_info"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_cleaner_id_fkey"
-            columns: ["cleaner_id"]
-            isOneToOne: false
             referencedRelation: "cleaner_profiles"
             referencedColumns: ["id"]
           },
@@ -116,7 +116,9 @@ export type Database = {
       cleaner_profiles: {
         Row: {
           availability: Json | null
+          background_check_acknowledgment: boolean | null
           bio: string | null
+          contractor_acknowledgment: boolean | null
           created_at: string
           emergency_contact_email: string | null
           emergency_contact_name: string
@@ -125,11 +127,14 @@ export type Database = {
           id: string
           ssn: string
           status: string | null
+          work_eligibility_acknowledgment: boolean | null
           years_experience: number | null
         }
         Insert: {
           availability?: Json | null
+          background_check_acknowledgment?: boolean | null
           bio?: string | null
+          contractor_acknowledgment?: boolean | null
           created_at?: string
           emergency_contact_email?: string | null
           emergency_contact_name: string
@@ -138,11 +143,14 @@ export type Database = {
           id: string
           ssn: string
           status?: string | null
+          work_eligibility_acknowledgment?: boolean | null
           years_experience?: number | null
         }
         Update: {
           availability?: Json | null
+          background_check_acknowledgment?: boolean | null
           bio?: string | null
+          contractor_acknowledgment?: boolean | null
           created_at?: string
           emergency_contact_email?: string | null
           emergency_contact_name?: string
@@ -151,9 +159,17 @@ export type Database = {
           id?: string
           ssn?: string
           status?: string | null
+          work_eligibility_acknowledgment?: boolean | null
           years_experience?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "cleaner_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "cleaner_info"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "cleaner_profiles_id_fkey"
             columns: ["id"]
@@ -190,14 +206,14 @@ export type Database = {
             foreignKeyName: "client_cleaner_matches_cleaner_id_fkey"
             columns: ["cleaner_id"]
             isOneToOne: false
-            referencedRelation: "cleaner_info"
+            referencedRelation: "cleaner_profiles"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "client_cleaner_matches_cleaner_id_fkey"
-            columns: ["cleaner_id"]
+            foreignKeyName: "client_cleaner_matches_client_id_fkey"
+            columns: ["client_id"]
             isOneToOne: false
-            referencedRelation: "cleaner_profiles"
+            referencedRelation: "cleaner_info"
             referencedColumns: ["id"]
           },
           {
@@ -259,13 +275,6 @@ export type Database = {
             foreignKeyName: "earnings_cleaner_id_fkey"
             columns: ["cleaner_id"]
             isOneToOne: false
-            referencedRelation: "cleaner_info"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "earnings_cleaner_id_fkey"
-            columns: ["cleaner_id"]
-            isOneToOne: false
             referencedRelation: "cleaner_profiles"
             referencedColumns: ["id"]
           },
@@ -301,7 +310,21 @@ export type Database = {
             foreignKeyName: "messages_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
+            referencedRelation: "cleaner_info"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_info"
             referencedColumns: ["id"]
           },
           {
@@ -345,6 +368,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "payment_methods_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_info"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "payment_methods_user_id_fkey"
             columns: ["user_id"]
@@ -431,7 +461,21 @@ export type Database = {
             foreignKeyName: "reviews_reviewee_id_fkey"
             columns: ["reviewee_id"]
             isOneToOne: false
+            referencedRelation: "cleaner_info"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewee_id_fkey"
+            columns: ["reviewee_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_info"
             referencedColumns: ["id"]
           },
           {
@@ -543,13 +587,6 @@ export type Database = {
             foreignKeyName: "bookings_cleaner_id_fkey"
             columns: ["cleaner_id"]
             isOneToOne: false
-            referencedRelation: "cleaner_info"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "bookings_cleaner_id_fkey"
-            columns: ["cleaner_id"]
-            isOneToOne: false
             referencedRelation: "cleaner_profiles"
             referencedColumns: ["id"]
           },
@@ -569,15 +606,7 @@ export type Database = {
           user_type: string | null
           years_experience: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "cleaner_profiles_id_fkey"
-            columns: ["id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
     }
     Functions: {

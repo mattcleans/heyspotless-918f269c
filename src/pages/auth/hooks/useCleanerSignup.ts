@@ -20,6 +20,9 @@ export const useCleanerSignup = () => {
   const [emergencyContactName, setEmergencyContactName] = useState("");
   const [emergencyContactEmail, setEmergencyContactEmail] = useState("");
   const [emergencyContactPhone, setEmergencyContactPhone] = useState("");
+  const [contractorAcknowledgment, setContractorAcknowledgment] = useState(false);
+  const [workEligibilityAcknowledgment, setWorkEligibilityAcknowledgment] = useState(false);
+  const [backgroundCheckAcknowledgment, setBackgroundCheckAcknowledgment] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showVerifyAlert, setShowVerifyAlert] = useState(false);
 
@@ -32,10 +35,11 @@ export const useCleanerSignup = () => {
     try {
       if (!email || !password || !firstName || !lastName || !phone || !ssn || 
           !hourlyRate || !street || !city || !state || !zipCode || 
-          !emergencyContactName || !emergencyContactPhone) {
+          !emergencyContactName || !emergencyContactPhone || 
+          !contractorAcknowledgment || !workEligibilityAcknowledgment || !backgroundCheckAcknowledgment) {
         toast({
           title: "Error",
-          description: "Please fill in all required fields",
+          description: "Please fill in all required fields and accept all acknowledgments",
           variant: "destructive",
         });
         setLoading(false);
@@ -76,7 +80,10 @@ export const useCleanerSignup = () => {
             years_experience: parseInt(yearsExperience) || 0,
             emergency_contact_name: emergencyContactName,
             emergency_contact_email: emergencyContactEmail || null,
-            emergency_contact_phone: emergencyContactPhone
+            emergency_contact_phone: emergencyContactPhone,
+            contractor_acknowledgment: contractorAcknowledgment,
+            work_eligibility_acknowledgment: workEligibilityAcknowledgment,
+            background_check_acknowledgment: backgroundCheckAcknowledgment
           });
 
         if (profileError) {
@@ -128,6 +135,9 @@ export const useCleanerSignup = () => {
         setEmergencyContactName("");
         setEmergencyContactEmail("");
         setEmergencyContactPhone("");
+        setContractorAcknowledgment(false);
+        setWorkEligibilityAcknowledgment(false);
+        setBackgroundCheckAcknowledgment(false);
         
         toast({
           title: "Success",
@@ -176,6 +186,12 @@ export const useCleanerSignup = () => {
     setEmergencyContactEmail,
     emergencyContactPhone,
     setEmergencyContactPhone,
+    contractorAcknowledgment,
+    setContractorAcknowledgment,
+    workEligibilityAcknowledgment,
+    setWorkEligibilityAcknowledgment,
+    backgroundCheckAcknowledgment,
+    setBackgroundCheckAcknowledgment,
     loading,
     showVerifyAlert,
     handleCleanerSignUp

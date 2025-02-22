@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import { UserPlus, Eye, EyeOff } from "lucide-react";
 import { useState } from "react";
 
@@ -21,6 +22,9 @@ interface CleanerRegistrationFormProps {
   emergencyContactName: string;
   emergencyContactEmail: string;
   emergencyContactPhone: string;
+  contractorAcknowledgment: boolean;
+  workEligibilityAcknowledgment: boolean;
+  backgroundCheckAcknowledgment: boolean;
   loading: boolean;
   onEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onPasswordChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -37,6 +41,9 @@ interface CleanerRegistrationFormProps {
   onEmergencyContactNameChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onEmergencyContactEmailChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onEmergencyContactPhoneChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onContractorAcknowledgmentChange: (checked: boolean) => void;
+  onWorkEligibilityAcknowledgmentChange: (checked: boolean) => void;
+  onBackgroundCheckAcknowledgmentChange: (checked: boolean) => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
@@ -56,6 +63,9 @@ export const CleanerRegistrationForm = ({
   emergencyContactName,
   emergencyContactEmail,
   emergencyContactPhone,
+  contractorAcknowledgment,
+  workEligibilityAcknowledgment,
+  backgroundCheckAcknowledgment,
   loading,
   onEmailChange,
   onPasswordChange,
@@ -72,6 +82,9 @@ export const CleanerRegistrationForm = ({
   onEmergencyContactNameChange,
   onEmergencyContactEmailChange,
   onEmergencyContactPhoneChange,
+  onContractorAcknowledgmentChange,
+  onWorkEligibilityAcknowledgmentChange,
+  onBackgroundCheckAcknowledgmentChange,
   onSubmit,
 }: CleanerRegistrationFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -293,6 +306,55 @@ export const CleanerRegistrationForm = ({
         </div>
       </div>
 
+      <div className="space-y-4">
+        <h3 className="text-lg font-medium">Acknowledgments</h3>
+        
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="contractorAcknowledgment"
+            checked={contractorAcknowledgment}
+            onCheckedChange={onContractorAcknowledgmentChange}
+            disabled={loading}
+          />
+          <Label
+            htmlFor="contractorAcknowledgment"
+            className="text-sm"
+          >
+            I understand that as an independent contractor, I am responsible for my own transportation, equipment, supplies, and taxes.*
+          </Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="workEligibilityAcknowledgment"
+            checked={workEligibilityAcknowledgment}
+            onCheckedChange={onWorkEligibilityAcknowledgmentChange}
+            disabled={loading}
+          />
+          <Label
+            htmlFor="workEligibilityAcknowledgment"
+            className="text-sm"
+          >
+            I confirm that I am legally eligible to work in the United States.*
+          </Label>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="backgroundCheckAcknowledgment"
+            checked={backgroundCheckAcknowledgment}
+            onCheckedChange={onBackgroundCheckAcknowledgmentChange}
+            disabled={loading}
+          />
+          <Label
+            htmlFor="backgroundCheckAcknowledgment"
+            className="text-sm"
+          >
+            I authorize the company to conduct a background check as part of the hiring process.*
+          </Label>
+        </div>
+      </div>
+
       <Button 
         type="submit" 
         className="w-full"
@@ -301,6 +363,10 @@ export const CleanerRegistrationForm = ({
         <UserPlus className="mr-2 h-4 w-4" />
         {loading ? "Creating your account..." : "Create Cleaner Account"}
       </Button>
+
+      <p className="text-xs text-muted-foreground text-center">
+        * Required fields
+      </p>
     </form>
   );
 };

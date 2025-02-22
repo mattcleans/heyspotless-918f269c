@@ -38,6 +38,12 @@ const CleanerRegistrationPage = () => {
     setEmergencyContactEmail,
     emergencyContactPhone,
     setEmergencyContactPhone,
+    contractorAcknowledgment,
+    setContractorAcknowledgment,
+    workEligibilityAcknowledgment,
+    setWorkEligibilityAcknowledgment,
+    backgroundCheckAcknowledgment,
+    setBackgroundCheckAcknowledgment,
     loading,
     showVerifyAlert,
     handleCleanerSignUp
@@ -73,6 +79,9 @@ const CleanerRegistrationPage = () => {
           emergencyContactName={emergencyContactName}
           emergencyContactEmail={emergencyContactEmail}
           emergencyContactPhone={emergencyContactPhone}
+          contractorAcknowledgment={contractorAcknowledgment}
+          workEligibilityAcknowledgment={workEligibilityAcknowledgment}
+          backgroundCheckAcknowledgment={backgroundCheckAcknowledgment}
           loading={loading}
           onEmailChange={(e) => setEmail(e.target.value)}
           onPasswordChange={(e) => setPassword(e.target.value)}
@@ -89,6 +98,9 @@ const CleanerRegistrationPage = () => {
           onEmergencyContactNameChange={(e) => setEmergencyContactName(e.target.value)}
           onEmergencyContactEmailChange={(e) => setEmergencyContactEmail(e.target.value)}
           onEmergencyContactPhoneChange={(e) => setEmergencyContactPhone(e.target.value)}
+          onContractorAcknowledgmentChange={setContractorAcknowledgment}
+          onWorkEligibilityAcknowledgmentChange={setWorkEligibilityAcknowledgment}
+          onBackgroundCheckAcknowledgmentChange={setBackgroundCheckAcknowledgment}
           onSubmit={handleCleanerSignUp}
         />
       </div>
