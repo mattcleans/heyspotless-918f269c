@@ -81,7 +81,8 @@ export const useCleanerSignup = () => {
             emergency_contact_phone: emergencyContactPhone,
             contractor_acknowledgment: contractorAcknowledgment,
             work_eligibility_acknowledgment: workEligibilityAcknowledgment,
-            background_check_acknowledgment: backgroundCheckAcknowledgment
+            background_check_acknowledgment: backgroundCheckAcknowledgment,
+            hourly_rate: 0
           });
 
         if (profileError) {
