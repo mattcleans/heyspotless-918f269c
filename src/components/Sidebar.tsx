@@ -82,9 +82,7 @@ const Sidebar = () => {
 
           setUnreadCount(count || 0);
         } else if (userId) {
-          // For authenticated users (implement this part after adding messages table)
-          // You'll need to count unread messages for the authenticated user
-          setUnreadCount(0); // Placeholder for now
+          setUnreadCount(0);
         }
       } catch (error) {
         console.error('Error fetching unread messages:', error);
@@ -93,7 +91,6 @@ const Sidebar = () => {
 
     fetchUnreadMessages();
 
-    // Set up real-time subscription for updates
     const subscription = supabase
       .channel('unread-messages')
       .on(
@@ -147,7 +144,7 @@ const Sidebar = () => {
           <div className="p-6">
             <div className="flex items-center justify-center">
               <img 
-                src="/lovable-uploads/bbb5176c-dbed-4e4a-8029-a3982064c2ea.png" 
+                src="/lovable-uploads/1a676461-9ff9-4ab4-b021-67ce76b13650.png" 
                 alt="Hey Spotless Logo" 
                 className="h-20 w-auto"
               />
