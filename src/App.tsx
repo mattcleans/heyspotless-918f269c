@@ -1,5 +1,6 @@
+
 import { useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { create } from "zustand";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
@@ -151,7 +152,7 @@ function App() {
   };
 
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -170,7 +171,7 @@ function App() {
         </Route>
       </Routes>
       <Toaster />
-    </BrowserRouter>
+    </>
   );
 }
 
