@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 
 export const useAddressForm = (onSuccess: () => void, onClose: () => void) => {
   const [street, setStreet] = useState("");

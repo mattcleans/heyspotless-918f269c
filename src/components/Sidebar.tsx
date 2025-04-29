@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 import { SidebarHeader } from "./sidebar/SidebarHeader";
 import { SidebarNav } from "./sidebar/SidebarNav";
 import { SidebarFooter } from "./sidebar/SidebarFooter";

@@ -1,7 +1,7 @@
 
 import { LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 

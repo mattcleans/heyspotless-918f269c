@@ -1,6 +1,6 @@
 
 import { Card } from "@/components/ui/card";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 import { Navigate } from "react-router-dom";
 import {
   Table,

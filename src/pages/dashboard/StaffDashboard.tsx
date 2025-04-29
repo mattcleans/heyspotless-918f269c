@@ -1,7 +1,6 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 import { startOfWeek, endOfWeek, addWeeks } from "date-fns";
 import { WelcomeHeader } from "./components/WelcomeHeader";
 import { StaffStats } from "./components/StaffStats";
@@ -145,4 +144,3 @@ const StaffDashboard = () => {
 };
 
 export default StaffDashboard;
-

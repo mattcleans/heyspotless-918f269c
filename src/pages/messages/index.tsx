@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useMessagesStore, type Contact } from "@/services/messages";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 import GuestChat from "./components/GuestChat";
 import ContactsList from "./components/ContactsList";
 import ChatArea from "./components/ChatArea";

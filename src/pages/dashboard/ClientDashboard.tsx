@@ -1,7 +1,6 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 import { WelcomeHeader } from "./components/WelcomeHeader";
 import { QuickStats } from "./components/QuickStats";
 import { UpcomingBookings } from "./components/UpcomingBookings";
@@ -263,4 +262,3 @@ const ClientDashboard = () => {
 };
 
 export default ClientDashboard;
-

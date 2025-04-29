@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 

@@ -1,9 +1,8 @@
-
 import { AuthCard } from "./components/AuthCard";
 import { CleanerRegistrationForm } from "./components/CleanerRegistrationForm";
 import { useCleanerSignup } from "./hooks/useCleanerSignup";
 import { Navigate } from "react-router-dom";
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 
 const CleanerRegistrationPage = () => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

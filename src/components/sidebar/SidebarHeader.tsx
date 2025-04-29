@@ -1,5 +1,5 @@
 
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 
 export const SidebarHeader = () => {
   const userType = useAuthStore((state) => state.userType);
