@@ -1,7 +1,6 @@
 
 import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import { create } from "zustand";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
 import IndexPage from "@/pages/Index";
@@ -15,21 +14,7 @@ import EditProfilePage from "@/pages/profile/EditProfilePage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 import CleanerRegistrationPage from "@/pages/auth/CleanerRegistrationPage";
 import { supabase } from "@/integrations/supabase/client";
-
-interface AuthState {
-  isAuthenticated: boolean;
-  userId: string | null;
-  userType: 'staff' | 'customer' | 'admin' | null;
-  setAuth: (userId: string | null, userType: 'staff' | 'customer' | 'admin' | null) => void;
-}
-
-export const useAuthStore = create<AuthState>((set) => ({
-  isAuthenticated: false,
-  userId: null,
-  userType: null,
-  setAuth: (userId, userType) => 
-    set({ isAuthenticated: !!userId, userId, userType }),
-}));
+import { useAuthStore } from "@/stores/auth";
 
 function isValidUserType(type: string | null): type is 'staff' | 'customer' | 'admin' {
   return type === 'staff' || type === 'customer' || type === 'admin';

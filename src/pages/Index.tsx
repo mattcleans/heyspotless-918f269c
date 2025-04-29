@@ -1,5 +1,5 @@
 
-import { useAuthStore } from "@/App";
+import { useAuthStore } from "@/stores/auth";
 import { Navigate } from "react-router-dom";
 import ClientDashboard from "./dashboard/ClientDashboard";
 import StaffDashboard from "./dashboard/StaffDashboard";
