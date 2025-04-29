@@ -13,5 +13,27 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     storageKey: 'sb-auth-token',
     flowType: 'pkce'
-  }
+  },
+  global: {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10,
+    },
+  },
 });
+
+// Helper function to check if we have an active session
+export const checkAuthSession = async () => {
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return !!session;
+  } catch (error) {
+    console.error("Error checking session:", error);
+    return false;
+  }
+};

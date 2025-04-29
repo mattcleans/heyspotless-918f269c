@@ -88,25 +88,42 @@ export const useLogin = () => {
         return;
       }
 
-      console.log("Fetching user profile");
+      console.log("Fetching user profile with RLS-compliant query");
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('user_type')
         .eq('id', authData.user.id)
-        .single();
+        .maybeSingle(); // Using maybeSingle instead of single to handle the case where the profile doesn't exist
 
-      if (profileError || !profile) {
+      if (profileError) {
         console.error("Profile error:", profileError);
         toast({
           title: "Error",
-          description: "Failed to load user profile",
+          description: "Failed to load user profile: " + profileError.message,
           variant: "destructive",
         });
+        
+        // Signout because we couldn't get profile data
+        await supabase.auth.signOut();
         safeSetLoading(false);
         return;
       }
 
-      console.log("Setting auth state");
+      if (!profile) {
+        console.error("No profile found for user:", authData.user.id);
+        toast({
+          title: "Account Setup Incomplete",
+          description: "Your user profile is missing. Please contact support.",
+          variant: "destructive",
+        });
+        
+        // Signout because the profile doesn't exist
+        await supabase.auth.signOut();
+        safeSetLoading(false);
+        return;
+      }
+
+      console.log("Setting auth state with profile:", profile);
       setAuth(authData.user.id, profile.user_type as 'staff' | 'customer' | 'admin');
 
       if (mounted.current) {
@@ -123,7 +140,7 @@ export const useLogin = () => {
       if (mounted.current) {
         toast({
           title: "Error",
-          description: "An unexpected error occurred",
+          description: "An unexpected error occurred during login",
           variant: "destructive",
         });
       }
