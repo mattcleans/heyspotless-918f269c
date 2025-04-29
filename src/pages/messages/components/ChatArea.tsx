@@ -5,14 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { format } from "date-fns";
-import { Contact } from "@/services/messages";
-
-interface Message {
-  id: string;
-  content: string;
-  sender_id: string;
-  created_at: string;
-}
+import { Contact, Message } from "@/services/messages";
 
 interface ChatAreaProps {
   selectedContact: Contact | null;
