@@ -568,7 +568,7 @@ export type Database = {
         Row: {
           address: string | null
           cleaner_id: string | null
-          contact_email: string | null
+          contact_name: string | null
           contact_phone: string | null
           created_at: string | null
           date: string | null
