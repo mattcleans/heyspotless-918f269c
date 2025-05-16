@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { resetPassword } from "@/integrations/supabase/client";
+import { resetPassword, updatePassword } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const usePasswordReset = () => {
@@ -56,9 +56,46 @@ export const usePasswordReset = () => {
     }
   };
 
+  const handleResetPassword = async (newPassword: string) => {
+    if (loading) return;
+    
+    setLoading(true);
+    
+    try {
+      const { error } = await updatePassword(newPassword);
+      
+      if (error) {
+        toast({
+          title: "Error",
+          description: error.message,
+          variant: "destructive",
+        });
+        return false;
+      }
+      
+      toast({
+        title: "Success",
+        description: "Your password has been updated successfully",
+      });
+      
+      return true;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while updating your password",
+        variant: "destructive",
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     isResetMode,
     setIsResetMode,
     handleForgotPassword,
+    handleResetPassword,
+    loading
   };
 };
