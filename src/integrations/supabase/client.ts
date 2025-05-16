@@ -50,17 +50,20 @@ export const cleanupAuthState = () => {
 // Authentication helper functions
 export const signUp = async (email: string, password: string, userData?: Record<string, any>) => {
   try {
+    console.log("SignUp: Cleaning up existing state");
     // Clean up existing state first to prevent auth limbo
     cleanupAuthState();
     
     // Attempt global sign out first
     try {
+      console.log("SignUp: Attempting pre-signup logout");
       await supabase.auth.signOut({ scope: 'global' });
     } catch (err) {
       // Continue even if this fails
       console.log("Pre-signUp signOut failed (expected):", err);
     }
     
+    console.log("SignUp: Creating new user account");
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -68,6 +71,12 @@ export const signUp = async (email: string, password: string, userData?: Record<
         data: userData,
       }
     });
+    
+    if (error) {
+      console.error("SignUp error:", error);
+    } else {
+      console.log("SignUp successful for email:", email);
+    }
     
     return { data, error };
   } catch (error) {
@@ -78,24 +87,30 @@ export const signUp = async (email: string, password: string, userData?: Record<
 
 export const signIn = async (email: string, password: string) => {
   try {
+    console.log("SignIn: Cleaning up existing state");
     // Clean up existing state first to prevent auth limbo
     cleanupAuthState();
     
     // Attempt global sign out first
     try {
+      console.log("SignIn: Attempting pre-signin logout");
       await supabase.auth.signOut({ scope: 'global' });
     } catch (err) {
       // Continue even if this fails
       console.log("Pre-signIn signOut failed (expected):", err);
     }
     
+    console.log("SignIn: Attempting to sign in with email:", email);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     
-    // For most production apps, this is where you'd refresh the page to ensure clean state
-    // window.location.href = '/';
+    if (error) {
+      console.error("SignIn error:", error);
+    } else {
+      console.log("SignIn successful for user:", data.user?.id);
+    }
     
     return { data, error };
   } catch (error) {

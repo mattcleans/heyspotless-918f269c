@@ -43,6 +43,7 @@ export const RegisterForm = ({
           <Label htmlFor="firstName">First Name</Label>
           <Input
             id="firstName"
+            name="firstName"
             type="text"
             placeholder="John"
             value={firstName}
@@ -55,6 +56,7 @@ export const RegisterForm = ({
           <Label htmlFor="lastName">Last Name</Label>
           <Input
             id="lastName"
+            name="lastName"
             type="text"
             placeholder="Doe"
             value={lastName}
@@ -69,6 +71,7 @@ export const RegisterForm = ({
         <Label htmlFor="email">Email</Label>
         <Input
           id="email"
+          name="email"
           type="email"
           placeholder="you@example.com"
           value={email}
@@ -82,6 +85,7 @@ export const RegisterForm = ({
         <Label htmlFor="phone">Phone Number</Label>
         <Input
           id="phone"
+          name="phone"
           type="tel"
           placeholder="(555) 123-4567"
           value={phone}
@@ -96,6 +100,7 @@ export const RegisterForm = ({
         <div className="relative">
           <Input
             id="password"
+            name="password"
             type={showPassword ? "text" : "password"}
             placeholder="Create a secure password"
             value={password}

@@ -35,6 +35,7 @@ export const LoginForm = ({
       <div className="space-y-2">
         <Input 
           type="email" 
+          name="email"
           placeholder="Email" 
           value={email} 
           onChange={onEmailChange} 
@@ -44,7 +45,8 @@ export const LoginForm = ({
       </div>
       <div className="relative">
         <Input 
-          type={showPassword ? "text" : "password"} 
+          type={showPassword ? "text" : "password"}
+          name="password" 
           placeholder="Password" 
           value={password} 
           onChange={onPasswordChange} 

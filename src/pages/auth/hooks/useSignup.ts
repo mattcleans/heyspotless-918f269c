@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { signUp, cleanupAuthState } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useSignup = () => {
@@ -30,17 +30,14 @@ export const useSignup = () => {
         return;
       }
 
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            user_type: 'customer',
-            first_name: firstName,
-            last_name: lastName,
-            phone: phone
-          }
-        }
+      // Clean up existing auth state to prevent issues
+      cleanupAuthState();
+      
+      const { data, error } = await signUp(email, password, {
+        user_type: 'customer',
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone
       });
 
       if (error) {
@@ -53,7 +50,7 @@ export const useSignup = () => {
         return;
       }
 
-      if (data.user) {
+      if (data?.user) {
         setShowVerifyAlert(true);
         setEmail("");
         setPassword("");

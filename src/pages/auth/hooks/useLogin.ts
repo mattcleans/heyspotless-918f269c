@@ -1,7 +1,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, signIn, cleanupAuthState } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth";
 
@@ -51,15 +51,15 @@ export const useLogin = () => {
         return;
       }
 
+      // Clean up existing auth state to prevent issues
+      cleanupAuthState();
+      
       console.log("Authenticating with Supabase");
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data, error } = await signIn(email, password);
 
-      if (authError) {
-        console.error("Auth error:", authError);
-        if (authError.message.includes("Email not confirmed")) {
+      if (error) {
+        console.error("Auth error:", error);
+        if (error.message.includes("Email not confirmed")) {
           setShowVerifyAlert(true);
           toast({
             title: "Verification Required",
@@ -69,7 +69,7 @@ export const useLogin = () => {
         } else {
           toast({
             title: "Login Failed",
-            description: authError.message,
+            description: error.message,
             variant: "destructive",
           });
         }
@@ -77,7 +77,7 @@ export const useLogin = () => {
         return;
       }
 
-      if (!authData.user) {
+      if (!data?.user) {
         console.error("No user data received");
         toast({
           title: "Error",
@@ -92,8 +92,8 @@ export const useLogin = () => {
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('user_type')
-        .eq('id', authData.user.id)
-        .maybeSingle(); // Using maybeSingle instead of single to handle the case where the profile doesn't exist
+        .eq('id', data.user.id)
+        .maybeSingle();
 
       if (profileError) {
         console.error("Profile error:", profileError);
@@ -103,28 +103,26 @@ export const useLogin = () => {
           variant: "destructive",
         });
         
-        // Signout because we couldn't get profile data
         await supabase.auth.signOut();
         safeSetLoading(false);
         return;
       }
 
       if (!profile) {
-        console.error("No profile found for user:", authData.user.id);
+        console.error("No profile found for user:", data.user.id);
         toast({
           title: "Account Setup Incomplete",
           description: "Your user profile is missing. Please contact support.",
           variant: "destructive",
         });
         
-        // Signout because the profile doesn't exist
         await supabase.auth.signOut();
         safeSetLoading(false);
         return;
       }
 
       console.log("Setting auth state with profile:", profile);
-      setAuth(authData.user.id, profile.user_type as 'staff' | 'customer' | 'admin');
+      setAuth(data.user.id, profile.user_type as 'staff' | 'customer' | 'admin');
 
       if (mounted.current) {
         toast({

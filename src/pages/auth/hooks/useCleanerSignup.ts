@@ -1,6 +1,5 @@
-
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, signUp, cleanupAuthState } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useCleanerSignup = () => {
@@ -30,6 +29,7 @@ export const useCleanerSignup = () => {
     if (loading) return;
     
     setLoading(true);
+    console.log("Starting cleaner registration process");
     
     try {
       if (!email || !password || !firstName || !lastName || !phone || !ssn || 
@@ -45,20 +45,19 @@ export const useCleanerSignup = () => {
         return;
       }
 
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            user_type: 'staff',
-            first_name: firstName,
-            last_name: lastName,
-            phone: phone
-          }
-        }
+      // Clean up existing auth state to prevent issues
+      cleanupAuthState();
+      
+      console.log("Signing up with Supabase");
+      const { data: signUpData, error: signUpError } = await signUp(email, password, {
+        user_type: 'staff',
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone
       });
 
       if (signUpError) {
+        console.error("Signup error:", signUpError);
         toast({
           title: "Registration Failed",
           description: signUpError.message,
@@ -68,81 +67,96 @@ export const useCleanerSignup = () => {
         return;
       }
 
-      if (signUpData.user) {
-        // Create cleaner profile
-        const { error: profileError } = await supabase
-          .from('cleaner_profiles')
-          .insert({
-            id: signUpData.user.id,
-            ssn,
-            years_experience: parseInt(yearsExperience) || 0,
-            emergency_contact_name: emergencyContactName,
-            emergency_contact_email: emergencyContactEmail || null,
-            emergency_contact_phone: emergencyContactPhone,
-            contractor_acknowledgment: contractorAcknowledgment,
-            work_eligibility_acknowledgment: workEligibilityAcknowledgment,
-            background_check_acknowledgment: backgroundCheckAcknowledgment,
-            hourly_rate: 0
-          });
-
-        if (profileError) {
-          toast({
-            title: "Error",
-            description: "Failed to create cleaner profile",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        // Create address
-        const { error: addressError } = await supabase
-          .from('addresses')
-          .insert({
-            user_id: signUpData.user.id,
-            street,
-            city,
-            state,
-            postal_code: zipCode,
-            is_primary: true
-          });
-
-        if (addressError) {
-          toast({
-            title: "Error",
-            description: "Failed to save address",
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        setShowVerifyAlert(true);
-        // Clear form
-        setEmail("");
-        setPassword("");
-        setFirstName("");
-        setLastName("");
-        setPhone("");
-        setSsn("");
-        setYearsExperience("");
-        setStreet("");
-        setCity("");
-        setState("");
-        setZipCode("");
-        setEmergencyContactName("");
-        setEmergencyContactEmail("");
-        setEmergencyContactPhone("");
-        setContractorAcknowledgment(false);
-        setWorkEligibilityAcknowledgment(false);
-        setBackgroundCheckAcknowledgment(false);
-        
+      if (!signUpData?.user) {
+        console.error("No user data received during signup");
         toast({
-          title: "Success",
-          description: "Please check your email to verify your account before logging in.",
+          title: "Registration Failed",
+          description: "No user data received",
+          variant: "destructive",
         });
+        setLoading(false);
+        return;
       }
+
+      console.log("User registered, creating cleaner profile");
+      // Create cleaner profile
+      const { error: profileError } = await supabase
+        .from('cleaner_profiles')
+        .insert({
+          id: signUpData.user.id,
+          ssn,
+          years_experience: parseInt(yearsExperience) || 0,
+          emergency_contact_name: emergencyContactName,
+          emergency_contact_email: emergencyContactEmail || null,
+          emergency_contact_phone: emergencyContactPhone,
+          contractor_acknowledgment: contractorAcknowledgment,
+          work_eligibility_acknowledgment: workEligibilityAcknowledgment,
+          background_check_acknowledgment: backgroundCheckAcknowledgment,
+          hourly_rate: 0
+        });
+
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+        toast({
+          title: "Error",
+          description: "Failed to create cleaner profile: " + profileError.message,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      console.log("Creating address");
+      // Create address
+      const { error: addressError } = await supabase
+        .from('addresses')
+        .insert({
+          user_id: signUpData.user.id,
+          street,
+          city,
+          state,
+          postal_code: zipCode,
+          is_primary: true
+        });
+
+      if (addressError) {
+        console.error("Address creation error:", addressError);
+        toast({
+          title: "Error",
+          description: "Failed to save address: " + addressError.message,
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      setShowVerifyAlert(true);
+      // Clear form
+      setEmail("");
+      setPassword("");
+      setFirstName("");
+      setLastName("");
+      setPhone("");
+      setSsn("");
+      setYearsExperience("");
+      setStreet("");
+      setCity("");
+      setState("");
+      setZipCode("");
+      setEmergencyContactName("");
+      setEmergencyContactEmail("");
+      setEmergencyContactPhone("");
+      setContractorAcknowledgment(false);
+      setWorkEligibilityAcknowledgment(false);
+      setBackgroundCheckAcknowledgment(false);
+      
+      toast({
+        title: "Success",
+        description: "Please check your email to verify your account before logging in.",
+      });
+      console.log("Cleaner registration successful");
     } catch (error) {
+      console.error("Unexpected error during cleaner registration:", error);
       toast({
         title: "Error",
         description: "An unexpected error occurred during registration",
