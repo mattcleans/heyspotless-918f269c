@@ -490,14 +490,17 @@ export type Database = {
       secrets: {
         Row: {
           name: string
+          user_id: string
           value: string
         }
         Insert: {
           name: string
+          user_id: string
           value: string
         }
         Update: {
           name?: string
+          user_id?: string
           value?: string
         }
         Relationships: []

@@ -24,13 +24,6 @@ const RegisterPage = () => {
   return (
     <AuthCard showVerifyAlert={showVerifyAlert}>
       <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight">Create your account</h1>
-          <p className="text-sm text-muted-foreground">
-            Join our community of happy customers and experience our premium cleaning services
-          </p>
-        </div>
-
         <RegisterForm
           email={email}
           password={password}
