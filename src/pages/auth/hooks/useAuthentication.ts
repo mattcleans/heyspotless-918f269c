@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signUp, signIn, resetPassword, updatePassword, cleanupAuthState } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth";
 
@@ -42,9 +42,10 @@ export const useAuthentication = () => {
         return;
       }
 
-      cleanupAuthState();
-      
-      const { data, error } = await signIn(email, password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (error) {
         if (error.message.includes("Email not confirmed")) {
@@ -100,13 +101,17 @@ export const useAuthentication = () => {
         return;
       }
 
-      cleanupAuthState();
-      
-      const { data, error } = await signUp(email, password, {
-        user_type: 'customer',
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            user_type: 'customer',
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone
+          }
+        }
       });
 
       if (error) {
@@ -163,7 +168,9 @@ export const useAuthentication = () => {
         return;
       }
       
-      const { error } = await resetPassword(resetEmail);
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       
       if (error) {
         toast({
@@ -198,7 +205,9 @@ export const useAuthentication = () => {
     setLoading(true);
     
     try {
-      const { error } = await updatePassword(newPassword);
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
       
       if (error) {
         toast({
