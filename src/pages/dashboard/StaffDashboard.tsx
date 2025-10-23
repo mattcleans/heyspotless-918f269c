@@ -58,20 +58,7 @@ const StaffDashboard = () => {
             id,
             hourly_rate,
             bio,
-            created_at,
-            status,
-            availability,
-            years_experience,
-            ssn,
-            background_check_acknowledgment,
-            contractor_acknowledgment,
-            work_eligibility_acknowledgment,
-            emergency_contact_name,
-            emergency_contact_email,
-            emergency_contact_phone,
-            profiles:profiles(
-              user_type
-            )
+            years_experience
           )
         `)
         .eq('cleaner_id', userId)
@@ -82,13 +69,12 @@ const StaffDashboard = () => {
 
       if (error) throw error;
       
-      // Transform data to match expected type
+      // Transform array to single object since foreign key join returns array
       return data?.map(booking => ({
         ...booking,
-        cleaner: booking.cleaner && {
-          ...booking.cleaner,
-          profiles: booking.cleaner.profiles
-        }
+        cleaner: Array.isArray(booking.cleaner) && booking.cleaner.length > 0 
+          ? booking.cleaner[0] 
+          : null
       })) ?? [];
     }
   });
@@ -100,7 +86,6 @@ const StaffDashboard = () => {
         .from('earnings')
         .select('*')
         .eq('cleaner_id', userId)
-        .eq('status', 'paid')
         .order('created_at', { ascending: false })
         .limit(5);
 
@@ -115,7 +100,7 @@ const StaffDashboard = () => {
       const { data, error } = await supabase
         .from('reviews')
         .select('*')
-        .eq('reviewee_id', userId)
+        .eq('cleaner_id', userId)
         .order('created_at', { ascending: false })
         .limit(5);
 

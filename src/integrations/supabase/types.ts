@@ -96,7 +96,15 @@ export type Database = {
           total_amount?: number | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "bookings_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       cleaner_profiles: {
         Row: {
@@ -198,7 +206,22 @@ export type Database = {
           created_at?: string | null
           id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "client_cleaner_matches_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_cleaner_matches_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       earnings: {
         Row: {
@@ -234,6 +257,13 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "earnings_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -383,6 +413,20 @@ export type Database = {
             columns: ["booking_id"]
             isOneToOne: false
             referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_cleaner_id_fkey"
+            columns: ["cleaner_id"]
+            isOneToOne: false
+            referencedRelation: "cleaner_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]

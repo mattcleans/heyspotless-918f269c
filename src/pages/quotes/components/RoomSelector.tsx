@@ -9,10 +9,12 @@ interface RoomCounts {
 
 interface ServiceType {
   id: string;
-  type: 'standard' | 'deep' | 'move';
+  type: string;
   name: string;
   price_multiplier: number;
   description: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 interface RoomSelectorProps {

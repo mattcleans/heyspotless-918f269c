@@ -26,37 +26,23 @@ const ClientDashboard = () => {
             id,
             hourly_rate,
             bio,
-            created_at,
-            status,
-            availability,
-            years_experience,
-            ssn,
-            background_check_acknowledgment,
-            contractor_acknowledgment,
-            work_eligibility_acknowledgment,
-            emergency_contact_name,
-            emergency_contact_email,
-            emergency_contact_phone,
-            profiles:profiles (
-              user_type
-            )
+            years_experience
           )
         `)
-        .eq('user_id', userId)
+        .eq('customer_id', userId)
         .eq('status', 'confirmed')
         .gte('date', new Date().toISOString())
         .order('date', { ascending: true })
         .limit(5);
 
       if (error) throw error;
-
-      // Transform data to match expected type
+      
+      // Transform array to single object since foreign key join returns array
       return data?.map(booking => ({
         ...booking,
-        cleaner: booking.cleaner && {
-          ...booking.cleaner,
-          profiles: booking.cleaner.profiles
-        }
+        cleaner: Array.isArray(booking.cleaner) && booking.cleaner.length > 0 
+          ? booking.cleaner[0] 
+          : null
       })) ?? [];
     },
     enabled: isAuthenticated
@@ -99,15 +85,15 @@ const ClientDashboard = () => {
         .from('client_cleaner_matches')
         .select(`
           *,
-          cleaner:cleaner_id (
+          cleaner:cleaner_profiles!client_cleaner_matches_cleaner_id_fkey (
             hourly_rate,
             bio,
             years_experience,
-            profiles:cleaner_profiles_id_fkey (user_type)
+            first_name,
+            last_name
           )
         `)
         .eq('client_id', userId)
-        .eq('status', 'active')
         .maybeSingle();
 
       if (error) throw error;

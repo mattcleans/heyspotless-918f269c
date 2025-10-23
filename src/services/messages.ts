@@ -9,7 +9,9 @@ export interface Message {
   sender_id: string;
   receiver_id: string;
   created_at: Date;
-  status: 'read' | 'unread' | 'answered';
+  status: string | null;
+  is_read?: boolean | null;
+  updated_at?: string | null;
 }
 
 export interface Contact {

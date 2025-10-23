@@ -6,23 +6,19 @@ import type { Database } from "@/integrations/supabase/types";
 
 type Booking = Database['public']['Tables']['bookings']['Row'] & {
   cleaner: {
-    hourly_rate: number;
+    hourly_rate: number | null;
     bio: string | null;
-    profiles: {
-      user_type: string;
-    };
   } | null;
 };
 
 type CleanerMatch = Database['public']['Tables']['client_cleaner_matches']['Row'] & {
   cleaner: {
-    hourly_rate: number;
+    hourly_rate: number | null;
     bio: string | null;
     years_experience: number | null;
-    profiles: {
-      user_type: string;
-    };
-  };
+    first_name: string;
+    last_name: string;
+  } | null;
 };
 
 interface QuickStatsProps {

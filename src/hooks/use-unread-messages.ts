@@ -10,11 +10,16 @@ export const useUnreadMessages = () => {
   const fetchUnreadMessages = async () => {
     try {
       if (!isAuthenticated) {
-        const { count } = await supabase
+        const { count, error } = await supabase
           .from('support_messages')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'unread')
-          .eq('sender_type', 'guest');
+          .or('sender_id.is.null,sender_id.neq.' + (userId || ''));
+
+        if (error) {
+          console.error('Error fetching unread messages:', error);
+          return;
+        }
 
         setUnreadCount(count || 0);
       } else if (userId) {
