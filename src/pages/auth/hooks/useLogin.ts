@@ -1,7 +1,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase, signIn, cleanupAuthState } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthStore } from "@/stores/auth";
 
@@ -51,11 +51,11 @@ export const useLogin = () => {
         return;
       }
 
-      // Clean up existing auth state to prevent issues
-      cleanupAuthState();
-      
       console.log("Authenticating with Supabase");
-      const { data, error } = await signIn(email, password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
       if (error) {
         console.error("Auth error:", error);

@@ -57,6 +57,7 @@ export type Database = {
           created_at: string | null
           customer_id: string | null
           date: string
+          duration: number | null
           id: string
           notes: string | null
           service_type: string
@@ -71,6 +72,7 @@ export type Database = {
           created_at?: string | null
           customer_id?: string | null
           date: string
+          duration?: number | null
           id?: string
           notes?: string | null
           service_type: string
@@ -85,6 +87,7 @@ export type Database = {
           created_at?: string | null
           customer_id?: string | null
           date?: string
+          duration?: number | null
           id?: string
           notes?: string | null
           service_type?: string
@@ -99,6 +102,9 @@ export type Database = {
         Row: {
           acknowledgments: Json | null
           availability: string[] | null
+          background_check_acknowledgment: boolean | null
+          bio: string | null
+          contractor_acknowledgment: boolean | null
           created_at: string | null
           date_of_birth: string | null
           email: string
@@ -108,17 +114,23 @@ export type Database = {
           first_name: string
           has_reliable_transportation: boolean | null
           has_valid_license: boolean | null
+          hourly_rate: number | null
           id: string
           last_name: string
           phone: string
           preferred_work_areas: string[] | null
           previous_experience: string | null
+          ssn: string | null
           updated_at: string | null
+          work_eligibility_acknowledgment: boolean | null
           years_experience: number | null
         }
         Insert: {
           acknowledgments?: Json | null
           availability?: string[] | null
+          background_check_acknowledgment?: boolean | null
+          bio?: string | null
+          contractor_acknowledgment?: boolean | null
           created_at?: string | null
           date_of_birth?: string | null
           email: string
@@ -128,17 +140,23 @@ export type Database = {
           first_name: string
           has_reliable_transportation?: boolean | null
           has_valid_license?: boolean | null
+          hourly_rate?: number | null
           id: string
           last_name: string
           phone: string
           preferred_work_areas?: string[] | null
           previous_experience?: string | null
+          ssn?: string | null
           updated_at?: string | null
+          work_eligibility_acknowledgment?: boolean | null
           years_experience?: number | null
         }
         Update: {
           acknowledgments?: Json | null
           availability?: string[] | null
+          background_check_acknowledgment?: boolean | null
+          bio?: string | null
+          contractor_acknowledgment?: boolean | null
           created_at?: string | null
           date_of_birth?: string | null
           email?: string
@@ -148,12 +166,15 @@ export type Database = {
           first_name?: string
           has_reliable_transportation?: boolean | null
           has_valid_license?: boolean | null
+          hourly_rate?: number | null
           id?: string
           last_name?: string
           phone?: string
           preferred_work_areas?: string[] | null
           previous_experience?: string | null
+          ssn?: string | null
           updated_at?: string | null
+          work_eligibility_acknowledgment?: boolean | null
           years_experience?: number | null
         }
         Relationships: []
@@ -187,6 +208,7 @@ export type Database = {
           created_at: string | null
           date: string
           id: string
+          tip_amount: number | null
         }
         Insert: {
           amount: number
@@ -195,6 +217,7 @@ export type Database = {
           created_at?: string | null
           date: string
           id?: string
+          tip_amount?: number | null
         }
         Update: {
           amount?: number
@@ -203,6 +226,7 @@ export type Database = {
           created_at?: string | null
           date?: string
           id?: string
+          tip_amount?: number | null
         }
         Relationships: [
           {
@@ -214,9 +238,45 @@ export type Database = {
           },
         ]
       }
+      messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          receiver_id: string | null
+          sender_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id?: string | null
+          sender_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id?: string | null
+          sender_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       payment_methods: {
         Row: {
+          card_type: string | null
           created_at: string | null
+          expiry_month: number | null
+          expiry_year: number | null
           id: string
           is_default: boolean | null
           last_four: string
@@ -225,7 +285,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          card_type?: string | null
           created_at?: string | null
+          expiry_month?: number | null
+          expiry_year?: number | null
           id?: string
           is_default?: boolean | null
           last_four: string
@@ -234,7 +297,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          card_type?: string | null
           created_at?: string | null
+          expiry_month?: number | null
+          expiry_year?: number | null
           id?: string
           is_default?: boolean | null
           last_four?: string
@@ -251,6 +317,7 @@ export type Database = {
           first_name: string | null
           id: string
           last_name: string | null
+          notes: string | null
           phone: string | null
           updated_at: string | null
           user_type: string
@@ -261,6 +328,7 @@ export type Database = {
           first_name?: string | null
           id: string
           last_name?: string | null
+          notes?: string | null
           phone?: string | null
           updated_at?: string | null
           user_type: string
@@ -271,38 +339,113 @@ export type Database = {
           first_name?: string | null
           id?: string
           last_name?: string | null
+          notes?: string | null
           phone?: string | null
           updated_at?: string | null
           user_type?: string
         }
         Relationships: []
       }
-      support_messages: {
+      reviews: {
+        Row: {
+          booking_id: string | null
+          cleaner_id: string | null
+          comment: string | null
+          created_at: string | null
+          customer_id: string | null
+          id: string
+          rating: number
+          updated_at: string | null
+        }
+        Insert: {
+          booking_id?: string | null
+          cleaner_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          rating: number
+          updated_at?: string | null
+        }
+        Update: {
+          booking_id?: string | null
+          cleaner_id?: string | null
+          comment?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          id?: string
+          rating?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_types: {
         Row: {
           created_at: string | null
+          description: string | null
           id: string
-          is_read: boolean | null
-          message: string
-          receiver_id: string | null
-          sender_id: string | null
-          user_id: string | null
+          name: string
+          price_multiplier: number | null
+          type: string
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
+          description?: string | null
           id?: string
-          is_read?: boolean | null
-          message: string
-          receiver_id?: string | null
-          sender_id?: string | null
-          user_id?: string | null
+          name: string
+          price_multiplier?: number | null
+          type: string
+          updated_at?: string | null
         }
         Update: {
           created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          price_multiplier?: number | null
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          receiver_id: string | null
+          sender_id: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
           id?: string
           is_read?: boolean | null
-          message?: string
           receiver_id?: string | null
           sender_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id?: string | null
+          sender_id?: string | null
+          status?: string | null
           user_id?: string | null
         }
         Relationships: []

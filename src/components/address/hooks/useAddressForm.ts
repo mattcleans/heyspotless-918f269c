@@ -87,7 +87,7 @@ export const useAddressForm = (onSuccess: () => void, onClose: () => void) => {
         street,
         city,
         state,
-        postal_code: postalCode,
+        zip_code: postalCode,
         user_id: userId,
         is_primary: isPrimary,
       });

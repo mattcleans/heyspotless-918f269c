@@ -39,7 +39,7 @@ export const AddressList = ({ addresses }: AddressListProps) => {
               <div className="flex-1">
                 <p className="font-medium">{address.street}</p>
                 <p className="text-sm text-muted-foreground">
-                  {address.city}, {address.state} {address.postal_code}
+                  {address.city}, {address.state} {address.zip_code}
                 </p>
               </div>
               {address.is_primary && (

@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { supabase, checkAuthSession, signIn, signOut, signUp, resetPassword, updatePassword } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/auth";
 import { useToast } from "./use-toast";
 import { User } from "@supabase/supabase-js";
@@ -44,17 +44,17 @@ export function useAuth() {
                   
                   if (!profileData) {
                     console.error("No profile found for user:", session.user.id);
-                    toast({
-                      title: "Account Setup Incomplete",
-                      description: "Your user profile is missing. Please contact support.",
-                      variant: "destructive",
-                    });
-                    await signOut();
-                    return;
-                  }
-                  
-                  // Update the auth store
-                  setAuth(session.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
+                  toast({
+                    title: "Account Setup Incomplete",
+                    description: "Your user profile is missing. Please contact support.",
+                    variant: "destructive",
+                  });
+                  await supabase.auth.signOut();
+                  return;
+                }
+                
+                // Update the auth store
+                setAuth(session.user.id, profileData.user_type as 'staff' | 'customer' | 'admin');
                 } catch (err) {
                   console.error("Error in auth change handler:", err);
                   toast({
@@ -62,7 +62,7 @@ export function useAuth() {
                     description: "There was a problem with your session. Please sign in again.",
                     variant: "destructive",
                   });
-                  await signOut();
+                  await supabase.auth.signOut();
                 }
               }, 0);
             } else {
@@ -97,7 +97,10 @@ export function useAuth() {
   const handleSignIn = useCallback(async (email: string, password: string) => {
     setLoading(true);
     try {
-      const { data, error } = await signIn(email, password);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
       if (error) {
         toast({
@@ -139,7 +142,13 @@ export function useAuth() {
   const handleSignUp = useCallback(async (email: string, password: string, userData: Record<string, any>) => {
     setLoading(true);
     try {
-      const { data, error } = await signUp(email, password, userData);
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: userData
+        }
+      });
       
       if (error) {
         toast({
@@ -172,7 +181,7 @@ export function useAuth() {
   const handleSignOut = useCallback(async () => {
     setLoading(true);
     try {
-      await signOut();
+      await supabase.auth.signOut();
       clearAuth();
       toast({
         title: "Signed Out",
@@ -196,7 +205,9 @@ export function useAuth() {
   const handleResetPassword = useCallback(async (email: string) => {
     setLoading(true);
     try {
-      const { error } = await resetPassword(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       
       if (error) {
         toast({
@@ -229,7 +240,9 @@ export function useAuth() {
   const handleUpdatePassword = useCallback(async (newPassword: string) => {
     setLoading(true);
     try {
-      const { error } = await updatePassword(newPassword);
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
       
       if (error) {
         toast({
@@ -270,6 +283,5 @@ export function useAuth() {
     handleSignOut,
     handleResetPassword,
     handleUpdatePassword,
-    checkSession: checkAuthSession,
   };
 }

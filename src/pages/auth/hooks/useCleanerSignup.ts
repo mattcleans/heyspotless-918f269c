@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase, signUp, cleanupAuthState } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useCleanerSignup = () => {
@@ -45,15 +45,18 @@ export const useCleanerSignup = () => {
         return;
       }
 
-      // Clean up existing auth state to prevent issues
-      cleanupAuthState();
-      
       console.log("Signing up with Supabase");
-      const { data: signUpData, error: signUpError } = await signUp(email, password, {
-        user_type: 'staff',
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            user_type: 'staff',
+            first_name: firstName,
+            last_name: lastName,
+            phone: phone
+          }
+        }
       });
 
       if (signUpError) {
@@ -84,10 +87,13 @@ export const useCleanerSignup = () => {
         .from('cleaner_profiles')
         .insert({
           id: signUpData.user.id,
+          first_name: firstName,
+          last_name: lastName,
+          email: email,
+          phone: phone,
           ssn,
           years_experience: parseInt(yearsExperience) || 0,
           emergency_contact_name: emergencyContactName,
-          emergency_contact_email: emergencyContactEmail || null,
           emergency_contact_phone: emergencyContactPhone,
           contractor_acknowledgment: contractorAcknowledgment,
           work_eligibility_acknowledgment: workEligibilityAcknowledgment,
@@ -115,7 +121,7 @@ export const useCleanerSignup = () => {
           street,
           city,
           state,
-          postal_code: zipCode,
+          zip_code: zipCode,
           is_primary: true
         });
 

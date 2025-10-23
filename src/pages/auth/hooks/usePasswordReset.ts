@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { resetPassword, updatePassword } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const usePasswordReset = () => {
@@ -27,7 +27,9 @@ export const usePasswordReset = () => {
         return;
       }
       
-      const { error } = await resetPassword(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
       
       if (error) {
         toast({
@@ -62,7 +64,9 @@ export const usePasswordReset = () => {
     setLoading(true);
     
     try {
-      const { error } = await updatePassword(newPassword);
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword,
+      });
       
       if (error) {
         toast({
