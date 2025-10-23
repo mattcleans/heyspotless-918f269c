@@ -14,7 +14,299 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      addresses: {
+        Row: {
+          city: string
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          state: string
+          street: string
+          updated_at: string | null
+          user_id: string | null
+          zip_code: string
+        }
+        Insert: {
+          city: string
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          state: string
+          street: string
+          updated_at?: string | null
+          user_id?: string | null
+          zip_code: string
+        }
+        Update: {
+          city?: string
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          state?: string
+          street?: string
+          updated_at?: string | null
+          user_id?: string | null
+          zip_code?: string
+        }
+        Relationships: []
+      }
+      bookings: {
+        Row: {
+          address: string
+          cleaner_id: string | null
+          created_at: string | null
+          customer_id: string | null
+          date: string
+          id: string
+          notes: string | null
+          service_type: string
+          status: string
+          time: string
+          total_amount: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          address: string
+          cleaner_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          service_type: string
+          status?: string
+          time: string
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          address?: string
+          cleaner_id?: string | null
+          created_at?: string | null
+          customer_id?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          service_type?: string
+          status?: string
+          time?: string
+          total_amount?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      cleaner_profiles: {
+        Row: {
+          acknowledgments: Json | null
+          availability: string[] | null
+          created_at: string | null
+          date_of_birth: string | null
+          email: string
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          first_name: string
+          has_reliable_transportation: boolean | null
+          has_valid_license: boolean | null
+          id: string
+          last_name: string
+          phone: string
+          preferred_work_areas: string[] | null
+          previous_experience: string | null
+          updated_at: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          acknowledgments?: Json | null
+          availability?: string[] | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          first_name: string
+          has_reliable_transportation?: boolean | null
+          has_valid_license?: boolean | null
+          id: string
+          last_name: string
+          phone: string
+          preferred_work_areas?: string[] | null
+          previous_experience?: string | null
+          updated_at?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          acknowledgments?: Json | null
+          availability?: string[] | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          first_name?: string
+          has_reliable_transportation?: boolean | null
+          has_valid_license?: boolean | null
+          id?: string
+          last_name?: string
+          phone?: string
+          preferred_work_areas?: string[] | null
+          previous_experience?: string | null
+          updated_at?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      client_cleaner_matches: {
+        Row: {
+          cleaner_id: string | null
+          client_id: string | null
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          cleaner_id?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          cleaner_id?: string | null
+          client_id?: string | null
+          created_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      earnings: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          cleaner_id: string | null
+          created_at: string | null
+          date: string
+          id: string
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          cleaner_id?: string | null
+          created_at?: string | null
+          date: string
+          id?: string
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          cleaner_id?: string | null
+          created_at?: string | null
+          date?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "earnings_booking_id_fkey"
+            columns: ["booking_id"]
+            isOneToOne: false
+            referencedRelation: "bookings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_methods: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          last_four: string
+          type: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          last_four: string
+          type: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          last_four?: string
+          type?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          phone: string | null
+          updated_at: string | null
+          user_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          user_type: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          phone?: string | null
+          updated_at?: string | null
+          user_type?: string
+        }
+        Relationships: []
+      }
+      support_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          receiver_id: string | null
+          sender_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          receiver_id?: string | null
+          sender_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          receiver_id?: string | null
+          sender_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
