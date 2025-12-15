@@ -1,11 +1,10 @@
 import { Mail, Phone, Clock, Shield, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
-interface ContactSidebarProps {
-  onScrollToForm?: () => void;
-}
+export function ContactSidebar() {
+  const navigate = useNavigate();
 
-export function ContactSidebar({ onScrollToForm }: ContactSidebarProps) {
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -46,7 +45,7 @@ export function ContactSidebar({ onScrollToForm }: ContactSidebarProps) {
           Check prices and book your cleaning in 60 seconds.
         </p>
         <Button 
-          onClick={onScrollToForm}
+          onClick={() => navigate('/BookService')}
           className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
         >
           Book Online Now

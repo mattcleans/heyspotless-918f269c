@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FrequencySelector } from "./components/FrequencySelector";
 import { RoomSelector } from "./components/RoomSelector";
 import { ExtrasSelector } from "./components/ExtrasSelector";
@@ -32,6 +31,16 @@ interface ServiceType {
   description: string;
   created_at?: string;
   updated_at?: string;
+}
+
+interface CustomerData {
+  customerId: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  notes?: string;
 }
 
 const frequencies: CleaningFrequency[] = [
@@ -91,6 +100,7 @@ const defaultServiceTypes: ServiceType[] = [
 
 const QuotePage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [selectedFrequency, setSelectedFrequency] = useState<string>("one-time");
   const [roomCounts, setRoomCounts] = useState<RoomCounts>({});
   const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
@@ -98,6 +108,18 @@ const QuotePage = () => {
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>(defaultServiceTypes);
   const [selectedServiceType, setSelectedServiceType] = useState<ServiceType | null>(null);
   const [discountAmount, setDiscountAmount] = useState<number>(0);
+  const [customerData, setCustomerData] = useState<CustomerData | null>(null);
+
+  // Get customer data from navigation state
+  useEffect(() => {
+    const state = location.state as { customerData?: CustomerData } | null;
+    if (state?.customerData) {
+      setCustomerData(state.customerData);
+      toast.success(`Welcome, ${state.customerData.firstName}!`, {
+        description: 'Build your custom cleaning quote below.',
+      });
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const fetchServiceTypes = async () => {
@@ -108,13 +130,13 @@ const QuotePage = () => {
 
       if (error) {
         toast.error('Error fetching service types');
-        setServiceTypes(defaultServiceTypes);  // Use default types if fetch fails
+        setServiceTypes(defaultServiceTypes);
         return;
       }
 
       if (data && data.length > 0) {
         setServiceTypes(data);
-        setSelectedServiceType(data[0]); // Set standard clean as default
+        setSelectedServiceType(data[0]);
       } else {
         setServiceTypes(defaultServiceTypes);
         setSelectedServiceType(defaultServiceTypes[0]);
@@ -172,8 +194,11 @@ const QuotePage = () => {
           total,
           frequency: selectedFrequency,
           frequencyName: frequencies.find(f => f.id === selectedFrequency)?.name || "",
-          serviceTypeName: selectedServiceType?.name || ""
-        }
+          serviceTypeName: selectedServiceType?.name || "",
+          roomCounts,
+          selectedExtras,
+        },
+        customerData: customerData,
       }
     });
   };
@@ -183,7 +208,10 @@ const QuotePage = () => {
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-bold text-[#0066B3]">Build Your Quote</h1>
         <p className="text-[#1B365D]/60">
-          Customize your cleaning service package
+          {customerData 
+            ? `Hi ${customerData.firstName}! Customize your cleaning service package below.`
+            : 'Customize your cleaning service package'
+          }
         </p>
       </div>
 

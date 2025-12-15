@@ -14,10 +14,6 @@ export default function BookPage() {
     libraries,
   });
 
-  const scrollToForm = () => {
-    formRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -56,7 +52,7 @@ export default function BookPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
           {/* Left Sidebar */}
           <div className="lg:col-span-2">
-            <ContactSidebar onScrollToForm={scrollToForm} />
+            <ContactSidebar />
           </div>
 
           {/* Right Form */}
