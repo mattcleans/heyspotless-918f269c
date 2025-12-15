@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/auth";
 import { Loadable } from "@/components/ui/loadable";
 import { useToast } from "@/hooks/use-toast";
@@ -13,6 +12,7 @@ import AddressAndNotes from "./components/AddressAndNotes";
 import GuestInformation from "./components/GuestInformation";
 import BookingConfirmation from "./components/BookingConfirmation";
 import { Button } from "@/components/ui/button";
+import { createHCPBooking } from "@/services/housecallPro";
 
 interface QuoteDetails {
   total: number;
@@ -106,35 +106,36 @@ const SchedulePage = () => {
     try {
       setIsSubmitting(true);
       
-      const { error: bookingError } = await supabase
-        .from('bookings')
-        .insert({
-          user_id: userId || null,
-          date: date.toISOString().split('T')[0],
-          time,
-          address,
-          notes,
-          status: 'pending',
-          price: totalPrice,
-          frequency: selectedFrequency,
-          service_type: serviceTypeName,
-          guest_email: !userId ? guestInfo.email : null,
-          guest_phone: !userId ? guestInfo.phone : null
-        });
-
-      if (bookingError) throw bookingError;
-
-      setCurrentStep("confirmation");
-      toast({
-        title: "Booking Successful",
-        description: "Your cleaning service has been scheduled."
+      // Create booking in Housecall Pro
+      const result = await createHCPBooking({
+        first_name: guestInfo.email ? undefined : 'Guest',
+        last_name: guestInfo.email ? undefined : 'Customer',
+        email: guestInfo.email || 'guest@booking.com',
+        phone: guestInfo.phone || '',
+        address,
+        date: date.toISOString().split('T')[0],
+        time,
+        service_type: serviceTypeName || 'Standard Clean',
+        notes,
+        total_amount: totalPrice,
+        duration: 2,
       });
+
+      if (result.success) {
+        setCurrentStep("confirmation");
+        toast({
+          title: "Booking Successful",
+          description: `Your cleaning service has been scheduled. Job #${result.job_number}`
+        });
+      } else {
+        throw new Error('Booking failed');
+      }
     } catch (error: any) {
       console.error('Booking error:', error);
       toast({
         variant: "destructive",
         title: "Booking Failed",
-        description: "There was an error scheduling your cleaning service. Please try again."
+        description: error.message || "There was an error scheduling your cleaning service. Please try again."
       });
     } finally {
       setIsSubmitting(false);

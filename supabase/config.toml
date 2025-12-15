@@ -1,1 +1,4 @@
 project_id = "mkayixdocommfbbryqjg"
+
+[functions.housecall-pro]
+verify_jwt = false
