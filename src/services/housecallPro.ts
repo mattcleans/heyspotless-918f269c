@@ -14,11 +14,27 @@ interface BookingData {
   duration?: number;
 }
 
+interface CustomerData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone: string;
+  address: string;
+  notes?: string;
+}
+
 interface HCPBookingResult {
   success: boolean;
   customer_id: string;
   job_id: string;
   job_number: string;
+}
+
+interface HCPCustomerResult {
+  success: boolean;
+  customer_id: string;
+  customer_name: string;
+  email: string;
 }
 
 export async function createHCPBooking(bookingData: BookingData): Promise<HCPBookingResult> {
@@ -45,4 +61,17 @@ export async function getHCPJobStatus(jobId: string) {
   }
 
   return data;
+}
+
+export async function createHCPCustomer(customerData: CustomerData): Promise<HCPCustomerResult> {
+  const { data, error } = await supabase.functions.invoke('housecall-pro/customers-only', {
+    body: customerData,
+  });
+
+  if (error) {
+    console.error('HCP customer creation error:', error);
+    throw new Error(error.message || 'Failed to create customer in Housecall Pro');
+  }
+
+  return data as HCPCustomerResult;
 }

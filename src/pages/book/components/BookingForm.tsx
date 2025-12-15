@@ -2,35 +2,25 @@ import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { PriceEstimate } from './PriceEstimate';
 import { toast } from 'sonner';
-import { createHCPBooking } from '@/services/housecallPro';
+import { createHCPCustomer } from '@/services/housecallPro';
 
-const bookingSchema = z.object({
+const contactSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Valid email is required'),
   phone: z.string().min(10, 'Valid phone number is required'),
   address: z.string().min(5, 'Address is required'),
-  serviceType: z.string().min(1, 'Service type is required'),
-  frequency: z.string().min(1, 'Frequency is required'),
-  propertySize: z.string().min(1, 'Property size is required'),
   notes: z.string().optional(),
 });
 
-type BookingFormData = z.infer<typeof bookingSchema>;
+type ContactFormData = z.infer<typeof contactSchema>;
 
 interface BookingFormProps {
   formRef?: React.RefObject<HTMLDivElement>;
@@ -38,25 +28,17 @@ interface BookingFormProps {
 
 export function BookingForm({ formRef }: BookingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [serviceType, setServiceType] = useState('standard');
-  const [frequency, setFrequency] = useState('biweekly');
-  const [propertySize, setPropertySize] = useState('0-1500');
   const addressInputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const navigate = useNavigate();
 
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
-    reset,
-  } = useForm<BookingFormData>({
-    resolver: zodResolver(bookingSchema),
-    defaultValues: {
-      serviceType: 'standard',
-      frequency: 'biweekly',
-      propertySize: '0-1500',
-    },
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
   });
 
   // Initialize Google Places Autocomplete
@@ -77,38 +59,40 @@ export function BookingForm({ formRef }: BookingFormProps) {
     });
   }, [setValue]);
 
-  const getServiceTypeLabel = (type: string) => {
-    switch (type) {
-      case 'standard': return 'Standard Cleaning';
-      case 'deep': return 'Deep Cleaning';
-      case 'move': return 'Move-In/Out Cleaning';
-      default: return 'Standard Cleaning';
-    }
-  };
-
-  const onSubmit = async (data: BookingFormData) => {
+  const onSubmit = async (data: ContactFormData) => {
     setIsSubmitting(true);
     try {
-      const result = await createHCPBooking({
+      // Create customer in HCP
+      const result = await createHCPCustomer({
         first_name: data.firstName,
         last_name: data.lastName,
         email: data.email,
         phone: data.phone,
         address: data.address,
-        date: new Date().toISOString().split('T')[0],
-        time: '09:00',
-        service_type: getServiceTypeLabel(data.serviceType),
-        notes: `Frequency: ${data.frequency}, Property Size: ${data.propertySize} sq ft. ${data.notes || ''}`,
-        total_amount: calculateEstimate(data.serviceType, data.frequency, data.propertySize),
+        notes: data.notes,
       });
 
-      toast.success(`Booking request submitted! Reference: ${result.job_number}`, {
-        description: 'We will contact you shortly to confirm your appointment.',
+      toast.success('Information saved!', {
+        description: 'Now let\'s build your custom quote.',
       });
-      reset();
+
+      // Navigate to quotes page with customer data
+      navigate('/quotes', {
+        state: {
+          customerData: {
+            customerId: result.customer_id,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            notes: data.notes,
+          }
+        }
+      });
     } catch (error) {
-      console.error('Booking error:', error);
-      toast.error('Failed to submit booking request', {
+      console.error('Customer creation error:', error);
+      toast.error('Failed to save information', {
         description: 'Please try again or call us directly.',
       });
     } finally {
@@ -116,16 +100,10 @@ export function BookingForm({ formRef }: BookingFormProps) {
     }
   };
 
-  const calculateEstimate = (service: string, freq: string, size: string) => {
-    const basePrices: Record<string, number> = { standard: 150, deep: 250, move: 350 };
-    const sizeMultipliers: Record<string, number> = { '0-1500': 1.0, '1501-2500': 1.3, '2501-3500': 1.6, '3501+': 2.0 };
-    const freqDiscounts: Record<string, number> = { weekly: 0.80, biweekly: 0.90, monthly: 0.95, 'one-time': 1.0 };
-    return Math.round((basePrices[service] || 150) * (sizeMultipliers[size] || 1.0) * (freqDiscounts[freq] || 1.0));
-  };
-
   return (
     <div ref={formRef} className="bg-card border border-border rounded-xl p-6 md:p-8 shadow-lg">
-      <h2 className="text-2xl font-bold text-foreground mb-6">Book Your Cleaning</h2>
+      <h2 className="text-2xl font-bold text-foreground mb-2">Get Started</h2>
+      <p className="text-muted-foreground mb-6">Enter your information and we'll help you build a custom quote.</p>
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Name Fields */}
@@ -201,100 +179,30 @@ export function BookingForm({ formRef }: BookingFormProps) {
           )}
         </div>
 
-        {/* Service Options */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="space-y-2">
-            <Label>Service Type</Label>
-            <Select
-              value={serviceType}
-              onValueChange={(val) => {
-                setServiceType(val);
-                setValue('serviceType', val);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="standard">Standard Cleaning</SelectItem>
-                <SelectItem value="deep">Deep Cleaning</SelectItem>
-                <SelectItem value="move">Move-In/Out</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Frequency</Label>
-            <Select
-              value={frequency}
-              onValueChange={(val) => {
-                setFrequency(val);
-                setValue('frequency', val);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="biweekly">Bi-Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="one-time">One-Time</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Property Size</Label>
-            <Select
-              value={propertySize}
-              onValueChange={(val) => {
-                setPropertySize(val);
-                setValue('propertySize', val);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0-1500">0 - 1,500 sq ft</SelectItem>
-                <SelectItem value="1501-2500">1,501 - 2,500 sq ft</SelectItem>
-                <SelectItem value="2501-3500">2,501 - 3,500 sq ft</SelectItem>
-                <SelectItem value="3501+">3,501+ sq ft</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-
         {/* Notes */}
         <div className="space-y-2">
-          <Label htmlFor="notes">Additional Notes (Optional)</Label>
+          <Label htmlFor="notes">Message (Optional)</Label>
           <Textarea
             id="notes"
-            placeholder="Any special requests or instructions..."
+            placeholder="Any special requests or questions..."
             {...register('notes')}
             rows={3}
           />
         </div>
 
-        {/* Price Estimate */}
-        <PriceEstimate
-          serviceType={serviceType}
-          frequency={frequency}
-          propertySize={propertySize}
-        />
-
         {/* Submit */}
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="w-full h-12 text-lg font-semibold bg-primary hover:bg-primary/90"
+          className="w-full h-12 text-lg font-semibold bg-accent hover:bg-accent/90 text-accent-foreground"
         >
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              Submitting...
+              Sending...
             </>
           ) : (
-            'Submit Booking Request'
+            'Send My Message'
           )}
         </Button>
 

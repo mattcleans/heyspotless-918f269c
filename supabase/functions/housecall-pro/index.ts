@@ -174,6 +174,30 @@ serve(async (req) => {
       });
     }
 
+    // Route: POST /customers-only - Create customer only (for lead capture)
+    if (req.method === 'POST' && path === '/customers-only') {
+      const customerData = await req.json();
+      
+      const customer = await createCustomer({
+        first_name: customerData.first_name || 'Guest',
+        last_name: customerData.last_name || 'Customer',
+        email: customerData.email,
+        phone: customerData.phone,
+        address: customerData.address,
+      });
+
+      console.log('Customer created/found for lead capture:', customer.id);
+
+      return new Response(JSON.stringify({
+        success: true,
+        customer_id: customer.id,
+        customer_name: `${customerData.first_name} ${customerData.last_name}`,
+        email: customerData.email,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Route: POST /book - Combined customer + job creation
     if (req.method === 'POST' && path === '/book') {
       const bookingData = await req.json();

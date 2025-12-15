@@ -14,6 +14,7 @@ import EditProfilePage from "@/pages/profile/EditProfilePage";
 import ResetPasswordPage from "@/pages/auth/ResetPasswordPage";
 import CleanerRegistrationPage from "@/pages/auth/CleanerRegistrationPage";
 import BookPage from "@/pages/book";
+import BookServicePage from "@/pages/book-service";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuthStore } from "@/stores/auth";
 
@@ -145,6 +146,7 @@ function App() {
         <Route path="/register/cleaner" element={<CleanerRegistrationPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/book" element={<BookPage />} />
+        <Route path="/BookService" element={<BookServicePage />} />
         <Route path="/" element={<Layout />}>
           <Route index element={<IndexPage />} />
           <Route path="clients" element={renderProtectedRoute(<ClientsPage />)} />
