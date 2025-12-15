@@ -34,7 +34,12 @@ export default function BookPage() {
       {/* Header */}
       <header className="bg-primary text-primary-foreground py-4 px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/1a676461-9ff9-4ab4-b021-67ce76b13650.png" 
+              alt="Hey Spotless Logo" 
+              className="h-10 w-auto"
+            />
             <span className="text-2xl font-bold">Hey Spotless</span>
           </div>
           <a 
