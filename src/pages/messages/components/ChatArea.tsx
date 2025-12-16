@@ -1,5 +1,5 @@
 
-import { MessageSquare, Phone, Video, History as HistoryIcon } from "lucide-react";
+import { MessageSquare, Phone, Video, History as HistoryIcon, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ interface ChatAreaProps {
   messageInput: string;
   onMessageInputChange: (value: string) => void;
   onSendMessage: () => void;
+  onDeleteMessage: (messageId: string) => void;
   userId?: string | null;
 }
 
@@ -22,6 +23,7 @@ const ChatArea = ({
   messageInput,
   onMessageInputChange,
   onSendMessage,
+  onDeleteMessage,
   userId,
 }: ChatAreaProps) => {
   if (!selectedContact) {
@@ -67,10 +69,20 @@ const ChatArea = ({
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex gap-2 items-start ${
+              className={`flex gap-2 items-start group ${
                 message.sender_id === userId ? 'justify-end' : ''
               }`}
             >
+              {message.sender_id === userId && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => onDeleteMessage(message.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
               <div
                 className={`p-3 rounded-lg max-w-[80%] ${
                   message.sender_id === userId

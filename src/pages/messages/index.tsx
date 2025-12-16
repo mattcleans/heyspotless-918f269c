@@ -7,7 +7,7 @@ import ContactsList from "./components/ContactsList";
 import ChatArea from "./components/ChatArea";
 
 const MessagesPage = () => {
-  const { contacts, messages, selectedContact, setSelectedContact, addMessage, fetchMessages, filter, setFilter } = useMessagesStore();
+  const { contacts, messages, selectedContact, setSelectedContact, addMessage, deleteMessage, fetchMessages, filter, setFilter } = useMessagesStore();
   const [messageInput, setMessageInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const { isAuthenticated, userId, userType } = useAuthStore();
@@ -82,6 +82,7 @@ const MessagesPage = () => {
           messageInput={messageInput}
           onMessageInputChange={setMessageInput}
           onSendMessage={handleSendMessage}
+          onDeleteMessage={deleteMessage}
           userId={userId}
         />
       </div>
