@@ -30,6 +30,7 @@ interface MessagesState {
   filter: 'all' | 'client' | 'employee';
   fetchMessages: () => Promise<void>;
   addMessage: (message: { content: string; receiver_id: string }) => Promise<void>;
+  deleteMessage: (messageId: string) => Promise<void>;
   setSelectedContact: (contact: Contact | null) => void;
   setFilter: (filter: 'all' | 'client' | 'employee') => void;
 }
@@ -112,6 +113,26 @@ export const useMessagesStore = create<MessagesState>((set, get) => ({
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error("Couldn't send message. Please try again.");
+    }
+  },
+
+  deleteMessage: async (messageId: string) => {
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .eq('id', messageId);
+
+      if (error) throw error;
+
+      set(state => ({
+        messages: state.messages.filter(msg => msg.id !== messageId)
+      }));
+
+      toast.success('Message deleted');
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      toast.error("Couldn't delete message. Please try again.");
     }
   },
 
